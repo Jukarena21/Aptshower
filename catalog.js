@@ -191,57 +191,17 @@ function insertAllCatalog(db) {
   }
 }
 
-/** Fragmento estable dentro de la URL del producto (para UPDATE aunque cambien query params o slash final). */
-function needleFromProductUrl(productUrl) {
-  try {
-    const u = new URL(productUrl);
-    const h = u.hostname.replace(/^www\./i, "").toLowerCase();
-    if (h.includes("falabella.com")) {
-      const m = productUrl.match(/\/product\/(\d{6,})\//);
-      if (m) return `/product/${m[1]}/`;
-    }
-    if (h.endsWith("ikea.com")) {
-      const m = u.pathname.match(/\/(p\/[^/]+)/);
-      if (m) return `/${m[1]}`;
-    }
-    if (h.includes("casaideas.com")) {
-      const parts = u.pathname.split("/").filter(Boolean);
-      if (parts.length) return parts[parts.length - 1];
-    }
-    if (h.includes("ambientegourmet.com")) return "servilletero-cuadrado-negro";
-    if (h.includes("homecenter.com")) {
-      const m = productUrl.match(/\/product\/(\d+)\//);
-      if (m) return `/product/${m[1]}/`;
-    }
-    if (h.includes("lamborghini.com")) return "/es-en/modelos/temerario";
-    if (h.includes("nvidia.com")) return "msi-geforce-rtx-5090";
-    if (h.includes("inversoro.es")) return "lingote-12-5-kilo-oro";
-    if (h.includes("terracoramg.com")) return "isla-ceycen";
-    if (h.includes("trumpcard.gov")) return "/apply";
-    if (h.includes("icbf.gov.co")) return "/adopciones";
-  } catch {
-    return "";
-  }
-  return "";
-}
-
 /**
- * Asigna miniaturas conocidas por URL de producto (amigos + premium).
- * Coincidencia exacta (con slash final opcional) + por fragmento de ruta (URLs guardadas con variantes).
+ * Miniaturas de respaldo (solo si coinciden las URLs al pie de la letra, con slash final opcional).
+ * No usar instr() genérico: un fragmento corto (p. ej. "p") podía machacar todas las filas.
  */
 function applyPreviewFallbacks(db) {
-  const exact = db.prepare(`
+  const stmt = db.prepare(`
     UPDATE items SET image_url = ?
     WHERE rtrim(url, '/') = rtrim(?, '/')
   `);
-  const fuzzy = db.prepare(`
-    UPDATE items SET image_url = ?
-    WHERE instr(url, ?) > 0
-  `);
   for (const [url, imageUrl] of Object.entries(PREVIEW_FALLBACK_BY_PRODUCT_URL)) {
-    exact.run(imageUrl, url);
-    const needle = needleFromProductUrl(url);
-    if (needle) fuzzy.run(imageUrl, needle);
+    stmt.run(imageUrl, url);
   }
 }
 

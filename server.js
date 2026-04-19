@@ -13,7 +13,7 @@ const {
   repairCatalogTitles,
   inferPremiumFromTitle,
 } = require("./catalog");
-const { isSafeHttpUrl } = require("./og-image");
+const { isSafeHttpUrl, fetchOgImage } = require("./og-image");
 
 const PORT = Number(process.env.PORT) || 3000;
 
@@ -99,6 +99,39 @@ app.get("/api/items", (_req, res) => {
   res.setHeader("Cache-Control", "no-store, must-revalidate");
   res.setHeader("Pragma", "no-cache");
   res.json(mapped);
+});
+
+/** Por cada ítem, pide la página del producto y guarda og:image (o twitter:image) en BD. */
+app.post("/api/catalog/hydrate-previews", async (_req, res) => {
+  try {
+    const rows = db.prepare("SELECT id, url FROM items ORDER BY id").all();
+    const upd = db.prepare("UPDATE items SET image_url = ? WHERE id = ?");
+    const out = [];
+
+    async function one(row) {
+      const pageUrl = String(row.url || "").trim();
+      if (!pageUrl || !isSafeHttpUrl(pageUrl)) return;
+      const imageUrl = await fetchOgImage(pageUrl);
+      if (!imageUrl || !isSafeHttpUrl(imageUrl)) return;
+      upd.run(imageUrl, row.id);
+      out.push({ id: row.id, imageUrl });
+    }
+
+    const concurrency = 2;
+    for (let i = 0; i < rows.length; i += concurrency) {
+      const chunk = rows.slice(i, i + concurrency);
+      await Promise.all(chunk.map((row) => one(row)));
+      if (i + concurrency < rows.length) {
+        await new Promise((r) => setTimeout(r, 450));
+      }
+    }
+
+    res.setHeader("Cache-Control", "no-store");
+    res.json({ ok: true, items: out });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ ok: false, error: "hydrate_failed" });
+  }
 });
 
 const THUMB_UA =

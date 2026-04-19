@@ -1435,12 +1435,34 @@
       toast._t = setTimeout(() => toastEl.classList.remove("show"), 2800);
     }
 
+    async function hydratePreviewsAfterLoad() {
+      try {
+        const r = await fetch("/api/catalog/hydrate-previews", {
+          method: "POST",
+          headers: { Accept: "application/json" },
+        });
+        if (!r.ok) return;
+        const data = await r.json();
+        const list = Array.isArray(data.items) ? data.items : [];
+        if (!list.length) return;
+        for (const row of list) {
+          const id = Number(row.id);
+          const it = items.find((x) => Number(x.id) === id);
+          if (it && row.imageUrl) it.image_url = row.imageUrl;
+        }
+        render();
+      } catch {
+        /* sin miniaturas nuevas */
+      }
+    }
+
     async function load() {
       try {
         const r = await fetch(`/api/items?_=${Date.now()}`, { cache: "no-store" });
         if (!r.ok) throw new Error();
         items = await r.json();
         render();
+        hydratePreviewsAfterLoad();
       } catch {
         listFriends.innerHTML = '<p class="empty">No se pudo cargar la lista. ¿Está encendido el servidor?</p>';
         listPremium.innerHTML = "";
