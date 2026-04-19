@@ -10,6 +10,7 @@ const {
   replaceAllCatalog,
   repairPremiumSections,
   applyPreviewFallbacks,
+  repairCatalogTitles,
   inferPremiumFromTitle,
 } = require("./catalog");
 const { isSafeHttpUrl } = require("./og-image");
@@ -42,6 +43,8 @@ if (process.env.RESEED_CATALOG === "1") {
   applyPreviewFallbacks(db);
   console.log("Catálogo inicial cargado (20 regalos).");
 }
+
+repairCatalogTitles(db);
 
 const itemCount = db.prepare("SELECT COUNT(*) AS c FROM items").get().c;
 console.log(`[Apartashower] Regalos en la base de datos: ${itemCount}`);

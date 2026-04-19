@@ -6,7 +6,13 @@ require("dotenv").config();
 const path = require("path");
 const fs = require("fs");
 const { DatabaseSync } = require("node:sqlite");
-const { ensureSchema, replaceAllCatalog, repairPremiumSections, applyPreviewFallbacks } = require("./catalog");
+const {
+  ensureSchema,
+  replaceAllCatalog,
+  repairPremiumSections,
+  applyPreviewFallbacks,
+  repairCatalogTitles,
+} = require("./catalog");
 
 const dataDir = path.join(__dirname, "data");
 if (!fs.existsSync(dataDir)) {
@@ -19,4 +25,5 @@ ensureSchema(db);
 replaceAllCatalog(db);
 repairPremiumSections(db);
 applyPreviewFallbacks(db);
+repairCatalogTitles(db);
 console.log("Catálogo listo: 20 regalos (14 amigos + 6 premium). Arranca el servidor con npm start.");

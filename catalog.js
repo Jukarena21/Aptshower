@@ -74,7 +74,7 @@ const SEED_ROWS = [
   },
   {
     section: "premium",
-    title: "Lamborghini Murciélago (enlace Temerario)",
+    title: "Lamborghini Temerario",
     url: "https://www.lamborghini.com/es-en/modelos/temerario",
   },
   {
@@ -89,7 +89,7 @@ const SEED_ROWS = [
   },
   {
     section: "premium",
-    title: "Isla (Cay Cen)",
+    title: "Isla Ceycen",
     url: "https://terracoramg.com/propiedades/isla-ceycen/",
   },
   {
@@ -141,10 +141,42 @@ function ensureSchema(db) {
  * el servidor no puede extraer miniatura; usamos URL de imagen directa (misma política de seguridad que og-image).
  */
 const PREVIEW_FALLBACK_BY_PRODUCT_URL = {
+  "https://www.falabella.com.co/falabella-co/product/770439235/Bowl-en-Acero-inoxidable-26-cm-x-26-cm/770439235":
+    "https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=800&q=85",
+  "https://www.falabella.com.co/falabella-co/product/770439205/Bowl-en-Acero-inoxidable-21-cm-x-21-cm/770439205":
+    "https://images.unsplash.com/photo-1563563423-b7ed7b547cd0?auto=format&fit=crop&w=800&q=85",
+  "https://www.falabella.com.co/falabella-co/product/150795115/set-de-4-refractarias-para-horno-en-vidrio-2500-ml-1600-ml-1900-ml-3-2-lt-taza-medidora-500-m/150795116":
+    "https://images.unsplash.com/photo-1584990347806-91dafb45ec6f?auto=format&fit=crop&w=800&q=85",
+  "https://www.falabella.com.co/falabella-co/product/119360162/Vaso-medidor-1-litro-Pyrex-6001076/119360163?kid=shopp278fa&gclsrc=aw.ds&gad_source=1&gad_campaignid=22071755962":
+    "https://images.unsplash.com/photo-1589984662646-e7b2e4962f18?auto=format&fit=crop&w=800&q=85",
+  "https://www.falabella.com.co/falabella-co/product/143302191/balanza-bascula-digital-cocina-gramera-cubierta-vidrio-5-kgs/143302192":
+    "https://images.unsplash.com/photo-1576086213369-97a306360363?auto=format&fit=crop&w=800&q=85",
+  "https://www.ambientegourmet.com/servilletero-cuadrado-negro/p?idsku=5952":
+    "https://images.unsplash.com/photo-1529973625058-a6654313384e?auto=format&fit=crop&w=800&q=85",
+  "https://www.homecenter.com.co/homecenter-co/product/915014/setx3-espatula-silicona-azul-y-blanco/915014/":
+    "https://images.unsplash.com/photo-1556912173-3bb406ef7e77?auto=format&fit=crop&w=800&q=85",
+  "https://www.ikea.com/co/es/p/grunka-set-utensilios-de-cocina-4-piezas-acero-inoxidable-30083334/":
+    "https://images.unsplash.com/photo-1556912173-46e336bea7c1?auto=format&fit=crop&w=800&q=85",
+  "https://www.ikea.com/co/es/p/upphetta-cafetera-prensa-francesa-vidrio-acero-inoxidable-60241389/":
+    "https://images.unsplash.com/photo-1517487881594-6987fef3d217?auto=format&fit=crop&w=800&q=85",
+  "https://www.ikea.com/co/es/p/vardagen-cucharas-medidoras-set-de-5-60324723/":
+    "https://images.unsplash.com/photo-1590480604561-d23cbd640a90?auto=format&fit=crop&w=800&q=85",
+  "https://www.ikea.com/co/es/p/vardagen-batidor-acero-inoxidable-haya-10581480/":
+    "https://images.unsplash.com/photo-1590794056226-bff3bf93154a?auto=format&fit=crop&w=800&q=85",
+  "https://www.casaideas.com.co/organizador-cub-extendible-plus-casa-cocina-3213709000036/p":
+    "https://images.unsplash.com/photo-1610701596001-115bbe4df904?auto=format&fit=crop&w=800&q=85",
+  "https://www.casaideas.com.co/exprimidor-transparent--verde-agua--0002-multicolor-casa-cocina_3226716000036/p":
+    "https://images.unsplash.com/photo-1623065422902-30a2d299bbe4?auto=format&fit=crop&w=800&q=85",
+  "https://www.ikea.com/co/es/p/uppfylld-centrifugador-de-verduras-blanco-00521948/":
+    "https://images.unsplash.com/photo-1540420773420-3365732aeddd?auto=format&fit=crop&w=800&q=85",
+  "https://www.lamborghini.com/es-en/modelos/temerario":
+    "https://images.unsplash.com/photo-1544636331-e26879c50e9d?auto=format&fit=crop&w=800&q=85",
   "https://marketplace.nvidia.com/en-us/consumer/graphics-cards/msi-geforce-rtx-5090-vanguard-soc/":
     "https://images.unsplash.com/photo-1587831990711-23ca6441447b?auto=format&fit=crop&w=800&q=85",
   "https://www.inversoro.es/lingotes-de-oro/lingote-de-12-5-kilo-oro/lingote-12-5-kilo-oro/":
-    "https://images.unsplash.com/photo-1519682337058-a94d519337bc?auto=format&fit=crop&w=800&q=85",
+    "https://images.unsplash.com/photo-1614849963640-9ccc78bda087?auto=format&fit=crop&w=800&q=85",
+  "https://terracoramg.com/propiedades/isla-ceycen/":
+    "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=85",
   "https://www.trumpcard.gov/apply":
     "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=800&q=85",
   "https://www.icbf.gov.co/adopciones":
@@ -159,15 +191,26 @@ function insertAllCatalog(db) {
   }
 }
 
-/** Rellena image_url cuando la extracción Open Graph no es posible (catálogos ya creados). */
+/**
+ * Asigna miniaturas conocidas por URL de producto (amigos + premium).
+ * Sobrescribe image_url si la URL está en el mapa, para corregir imágenes erróneas tras cambios.
+ */
 function applyPreviewFallbacks(db) {
-  const stmt = db.prepare(`
-    UPDATE items SET image_url = ?
-    WHERE url = ?
-    AND (image_url IS NULL OR trim(image_url) = '')
-  `);
+  const stmt = db.prepare("UPDATE items SET image_url = ? WHERE url = ?");
   for (const [url, imageUrl] of Object.entries(PREVIEW_FALLBACK_BY_PRODUCT_URL)) {
     stmt.run(imageUrl, url);
+  }
+}
+
+/** Alinea títulos del catálogo con el enlace (BD ya sembrada en Railway, etc.). */
+function repairCatalogTitles(db) {
+  const fixes = [
+    ["https://www.lamborghini.com/es-en/modelos/temerario", "Lamborghini Temerario"],
+    ["https://terracoramg.com/propiedades/isla-ceycen/", "Isla Ceycen"],
+  ];
+  const upd = db.prepare("UPDATE items SET title = ? WHERE url = ?");
+  for (const [url, title] of fixes) {
+    upd.run(title, url);
   }
 }
 
@@ -230,6 +273,7 @@ function repairPremiumSections(db) {
       OR instr(lower(title), 'gold card') > 0
       OR instr(lower(title), 'trumpcard') > 0
       OR instr(lower(title), 'temerario') > 0
+      OR instr(lower(title), 'ceycen') > 0
       OR (instr(lower(title), 'icbf') > 0 AND instr(lower(title), 'adopc') > 0)
     )
   `);
@@ -250,5 +294,6 @@ module.exports = {
   replaceAllCatalog,
   repairPremiumSections,
   applyPreviewFallbacks,
+  repairCatalogTitles,
   inferPremiumFromTitle,
 };
