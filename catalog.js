@@ -99,7 +99,7 @@ const SEED_ROWS = [
   },
   {
     section: "premium",
-    title: "Niño — adopción (chiste; ×2)",
+    title: "Niño (×2)",
     url: "https://www.icbf.gov.co/adopciones",
   },
 ];
@@ -142,13 +142,13 @@ function ensureSchema(db) {
  */
 const PREVIEW_FALLBACK_BY_PRODUCT_URL = {
   "https://www.falabella.com.co/falabella-co/product/770439235/Bowl-en-Acero-inoxidable-26-cm-x-26-cm/770439235":
-    "https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=800&q=85",
+    "https://images.unsplash.com/photo-1610557892470-55d9ae21cfc7?auto=format&fit=crop&w=800&q=85",
   "https://www.falabella.com.co/falabella-co/product/770439205/Bowl-en-Acero-inoxidable-21-cm-x-21-cm/770439205":
     "https://images.pexels.com/photos/4259140/pexels-photo-4259140.jpeg?auto=compress&cs=tinysrgb&w=800",
   "https://www.falabella.com.co/falabella-co/product/150795115/set-de-4-refractarias-para-horno-en-vidrio-2500-ml-1600-ml-1900-ml-3-2-lt-taza-medidora-500-m/150795116":
     "https://images.unsplash.com/photo-1589829085413-eaa008bac4a5?auto=format&fit=crop&w=800&q=85",
   "https://www.falabella.com.co/falabella-co/product/119360162/Vaso-medidor-1-litro-Pyrex-6001076/119360163?kid=shopp278fa&gclsrc=aw.ds&gad_source=1&gad_campaignid=22071755962":
-    "https://images.pexels.com/photos/6610100/pexels-photo-6610100.jpeg?auto=compress&cs=tinysrgb&w=800",
+    "https://images.unsplash.com/photo-1589984662646-e7b2e4962f18?auto=format&fit=crop&w=800&q=85",
   "https://www.falabella.com.co/falabella-co/product/143302191/balanza-bascula-digital-cocina-gramera-cubierta-vidrio-5-kgs/143302192":
     "https://images.unsplash.com/photo-1579762593179-f8553060e223?auto=format&fit=crop&w=800&q=85",
   "https://www.ambientegourmet.com/servilletero-cuadrado-negro/p?idsku=5952":
@@ -174,7 +174,7 @@ const PREVIEW_FALLBACK_BY_PRODUCT_URL = {
   "https://marketplace.nvidia.com/en-us/consumer/graphics-cards/msi-geforce-rtx-5090-vanguard-soc/":
     "https://images.unsplash.com/photo-1587831990711-23ca6441447b?auto=format&fit=crop&w=800&q=85",
   "https://www.inversoro.es/lingotes-de-oro/lingote-de-12-5-kilo-oro/lingote-12-5-kilo-oro/":
-    "https://images.unsplash.com/photo-1614849963640-9ccc78bda087?auto=format&fit=crop&w=800&q=85",
+    "https://images.pexels.com/photos/844124/pexels-photo-844124.jpeg?auto=compress&cs=tinysrgb&w=800",
   "https://terracoramg.com/propiedades/isla-ceycen/":
     "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=85",
   "https://www.trumpcard.gov/apply":
@@ -205,6 +205,42 @@ function applyPreviewFallbacks(db) {
   }
 }
 
+/** Coincide URL guardada con mapa de miniaturas (slash final y query distinta en Falabella). */
+function previewFallbackForProductUrl(productUrl) {
+  const raw = String(productUrl || "").trim();
+  if (!raw) return null;
+  const stripSlash = (s) => s.replace(/\/+$/, "");
+  for (const [key, imageUrl] of Object.entries(PREVIEW_FALLBACK_BY_PRODUCT_URL)) {
+    if (stripSlash(key) === stripSlash(raw)) return imageUrl;
+  }
+  try {
+    const a = new URL(raw);
+    const pathA = stripSlash(a.pathname) || a.pathname;
+    for (const [key, imageUrl] of Object.entries(PREVIEW_FALLBACK_BY_PRODUCT_URL)) {
+      const b = new URL(key);
+      if (a.origin === b.origin && pathA === (stripSlash(b.pathname) || b.pathname)) {
+        return imageUrl;
+      }
+    }
+  } catch {
+    /* noop */
+  }
+  return null;
+}
+
+/** og:image de estas tiendas suele ser lifestyle o vacío; preferimos miniatura curada si existe. */
+function preferCuratedThumbnailOverOg(productUrl) {
+  try {
+    const u = new URL(String(productUrl || "").trim());
+    const h = u.hostname.replace(/^www\./i, "").toLowerCase();
+    if (h.includes("falabella.com")) return true;
+    if (h.includes("inversoro.es") && u.pathname.toLowerCase().includes("lingote")) return true;
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 /** Alinea títulos del catálogo con el enlace (BD ya sembrada en Railway, etc.). */
 function repairCatalogTitles(db) {
   const updExact = db.prepare(`
@@ -221,6 +257,7 @@ function repairCatalogTitles(db) {
   `);
   updExact.run("Lamborghini Temerario", "https://www.lamborghini.com/es-en/modelos/temerario");
   updExact.run("Isla Ceycen", "https://terracoramg.com/propiedades/isla-ceycen/");
+  updExact.run("Niño (×2)", "https://www.icbf.gov.co/adopciones");
   updLamb.run("Lamborghini Temerario");
   updIsla.run("Isla Ceycen");
 }
@@ -253,7 +290,7 @@ function inferPremiumFromTitle(title) {
   if (/gold\s*card|goldcard|trumpcard|trump\s*gold/.test(t)) return true;
   if (/icbf/.test(t) && /adopc/.test(t)) return true;
   if (/nino.*adopc|adopc.*nino/.test(t)) return true;
-  if (/adopc.*chiste|chiste.*adopc/.test(t)) return true;
+  if (/\bnino\b/.test(t) && /×\s*2|x\s*2|\(×2\)/.test(t)) return true;
   return false;
 }
 
@@ -286,6 +323,7 @@ function repairPremiumSections(db) {
       OR instr(lower(title), 'temerario') > 0
       OR instr(lower(title), 'ceycen') > 0
       OR (instr(lower(title), 'icbf') > 0 AND instr(lower(title), 'adopc') > 0)
+      OR instr(lower(url), 'icbf.gov.co/adopciones') > 0
     )
   `);
   const rows = db.prepare("SELECT id, title FROM items").all();
@@ -305,6 +343,8 @@ module.exports = {
   replaceAllCatalog,
   repairPremiumSections,
   applyPreviewFallbacks,
+  previewFallbackForProductUrl,
+  preferCuratedThumbnailOverOg,
   repairCatalogTitles,
   inferPremiumFromTitle,
 };

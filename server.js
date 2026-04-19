@@ -10,6 +10,8 @@ const {
   replaceAllCatalog,
   repairPremiumSections,
   applyPreviewFallbacks,
+  previewFallbackForProductUrl,
+  preferCuratedThumbnailOverOg,
   repairCatalogTitles,
   inferPremiumFromTitle,
 } = require("./catalog");
@@ -111,7 +113,13 @@ app.post("/api/catalog/hydrate-previews", async (_req, res) => {
     async function one(row) {
       const pageUrl = String(row.url || "").trim();
       if (!pageUrl || !isSafeHttpUrl(pageUrl)) return;
-      const imageUrl = await fetchOgImage(pageUrl);
+      const curated = previewFallbackForProductUrl(pageUrl);
+      let imageUrl = null;
+      if (preferCuratedThumbnailOverOg(pageUrl) && curated) {
+        imageUrl = curated;
+      } else {
+        imageUrl = (await fetchOgImage(pageUrl)) || curated || null;
+      }
       if (!imageUrl || !isSafeHttpUrl(imageUrl)) return;
       upd.run(imageUrl, row.id);
       out.push({ id: row.id, imageUrl });
