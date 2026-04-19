@@ -13,6 +13,7 @@ const {
   applyPreviewFallbacks,
   repairCatalogListEdits,
   repairCatalogTitles,
+  ensureCatalogThumbRevision,
 } = require("./catalog");
 
 const dataDir = path.join(__dirname, "data");
@@ -28,4 +29,5 @@ repairPremiumSections(db);
 applyPreviewFallbacks(db);
 repairCatalogTitles(db);
 repairCatalogListEdits(db);
+ensureCatalogThumbRevision(db);
 console.log("Catálogo listo: 19 regalos (13 amigos + 6 premium). Arranca el servidor con npm start.");

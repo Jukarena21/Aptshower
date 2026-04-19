@@ -129,6 +129,30 @@ function ensureSchema(db) {
   if (!hasImageUrl) {
     db.exec("ALTER TABLE items ADD COLUMN image_url TEXT");
   }
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS _app_meta (
+      k TEXT PRIMARY KEY NOT NULL,
+      v TEXT NOT NULL
+    );
+  `);
+}
+
+/**
+ * Sube este número cuando cambie el catálogo (ítems borrados, URLs nuevas) para vaciar miniaturas
+ * viejas en BD y forzar hidratación alineada con cada `url`.
+ * Evita que queden `image_url` de otro producto bajo el mismo `id`.
+ */
+const CATALOG_THUMB_REVISION = 4;
+
+function ensureCatalogThumbRevision(db) {
+  const row = db.prepare(`SELECT v FROM _app_meta WHERE k = ?`).get("catalog_thumb_rev");
+  const cur = row && row.v != null ? parseInt(String(row.v), 10) || 0 : 0;
+  if (cur < CATALOG_THUMB_REVISION) {
+    db.exec(`UPDATE items SET image_url = NULL`);
+    db.prepare(
+      `INSERT INTO _app_meta (k, v) VALUES (?, ?) ON CONFLICT(k) DO UPDATE SET v = excluded.v`
+    ).run("catalog_thumb_rev", String(CATALOG_THUMB_REVISION));
+  }
 }
 
 /**
@@ -267,5 +291,6 @@ module.exports = {
   applyPreviewFallbacks,
   repairCatalogListEdits,
   repairCatalogTitles,
+  ensureCatalogThumbRevision,
   inferPremiumFromTitle,
 };

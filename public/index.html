@@ -1471,9 +1471,31 @@
       }
     }
 
+    /** Evita caché del navegador con la imagen equivocada cuando cambia `image_url` bajo el mismo `id`. */
+    function thumbCacheKey(str) {
+      let h = 2166136261;
+      const s = String(str);
+      for (let i = 0; i < s.length; i++) {
+        h ^= s.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+      }
+      return (h >>> 0).toString(36);
+    }
+
+    function withImageUrlCacheBust(href, imageUrl) {
+      try {
+        const x = new URL(href);
+        x.searchParams.set("aptv", thumbCacheKey(imageUrl));
+        return x.href;
+      } catch {
+        return href;
+      }
+    }
+
     function thumbSrcForItem(it) {
       const u = String(it.image_url || "").trim();
       if (!u) return "";
+      const bust = thumbCacheKey(u);
       try {
         const h = new URL(u).hostname.replace(/^www\./i, "").toLowerCase();
         if (
@@ -1483,12 +1505,12 @@
           h.endsWith(".pexels.com") ||
           h === "icbf.gov.co"
         ) {
-          return u;
+          return withImageUrlCacheBust(u, u);
         }
       } catch {
         return "";
       }
-      return `/api/thumb?id=${Number(it.id)}`;
+      return `/api/thumb?id=${Number(it.id)}&v=${encodeURIComponent(bust)}`;
     }
 
     function mediaBlock(it) {

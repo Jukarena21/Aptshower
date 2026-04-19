@@ -12,6 +12,7 @@ const {
   applyPreviewFallbacks,
   repairCatalogListEdits,
   repairCatalogTitles,
+  ensureCatalogThumbRevision,
   inferPremiumFromTitle,
 } = require("./catalog");
 const { isSafeHttpUrl, fetchOgImage } = require("./og-image");
@@ -90,6 +91,7 @@ if (process.env.RESEED_CATALOG === "1") {
 
 repairCatalogTitles(db);
 repairCatalogListEdits(db);
+ensureCatalogThumbRevision(db);
 applyProductThumbOverrides(db);
 
 const itemCount = db.prepare("SELECT COUNT(*) AS c FROM items").get().c;
