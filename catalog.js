@@ -14,8 +14,8 @@ const SEED_ROWS = [
   },
   {
     section: "friends",
-    title: "Set refractarias (Pyrex ×4 o Mica ×3)",
-    url: "https://www.falabella.com.co/falabella-co/product/150795115/set-de-4-refractarias-para-horno-en-vidrio-2500-ml-1600-ml-1900-ml-3-2-lt-taza-medidora-500-m/150795116",
+    title: "Refractarias vidrio MICA — set ×3",
+    url: "https://www.falabella.com.co/falabella-co/product/882865882/Refractarias-Vidrio-set-x-3/882865882",
   },
   {
     section: "friends",
@@ -56,11 +56,6 @@ const SEED_ROWS = [
     section: "friends",
     title: "Batidor en globo VARDAGEN",
     url: "https://www.ikea.com/co/es/p/vardagen-batidor-acero-inoxidable-haya-10581480/",
-  },
-  {
-    section: "friends",
-    title: "Organizador de cubiertos",
-    url: "https://www.casaideas.com.co/organizador-cub-extendible-plus-casa-cocina-3213709000036/p",
   },
   {
     section: "friends",
@@ -149,6 +144,25 @@ function insertAllCatalog(db) {
 
 /** Reservado por compatibilidad con `seed-catalog.js` (antes aplicaba mapas de stock). */
 function applyPreviewFallbacks(_db) {}
+
+const LEGACY_REFRACTARIAS_URL =
+  "https://www.falabella.com.co/falabella-co/product/150795115/set-de-4-refractarias-para-horno-en-vidrio-2500-ml-1600-ml-1900-ml-3-2-lt-taza-medidora-500-m/150795116";
+const REFRACTARIAS_URL =
+  "https://www.falabella.com.co/falabella-co/product/882865882/Refractarias-Vidrio-set-x-3/882865882";
+const REFRACTARIAS_TITLE = "Refractarias vidrio MICA — set ×3";
+
+/** Migra URL/título de refractarias y quita el organizador de cubiertos (catálogo ya sembrado). */
+function repairCatalogListEdits(db) {
+  db.prepare(
+    `UPDATE items SET url = ?, title = ? WHERE rtrim(url, '/') = rtrim(?, '/')`
+  ).run(REFRACTARIAS_URL, REFRACTARIAS_TITLE, LEGACY_REFRACTARIAS_URL);
+  db.prepare(`UPDATE items SET title = ? WHERE rtrim(url, '/') = rtrim(?, '/')`).run(REFRACTARIAS_TITLE, REFRACTARIAS_URL);
+  db.prepare(`
+    DELETE FROM items WHERE
+      instr(lower(url), 'organizador-cub-extendible') > 0
+      OR (lower(trim(title)) = 'organizador de cubiertos' AND instr(lower(url), 'casaideas') > 0)
+  `).run();
+}
 
 /** Alinea títulos del catálogo con el enlace (BD ya sembrada en Railway, etc.). */
 function repairCatalogTitles(db) {
@@ -251,6 +265,7 @@ module.exports = {
   replaceAllCatalog,
   repairPremiumSections,
   applyPreviewFallbacks,
+  repairCatalogListEdits,
   repairCatalogTitles,
   inferPremiumFromTitle,
 };

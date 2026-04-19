@@ -10,10 +10,54 @@ const {
   replaceAllCatalog,
   repairPremiumSections,
   applyPreviewFallbacks,
+  repairCatalogListEdits,
   repairCatalogTitles,
   inferPremiumFromTitle,
 } = require("./catalog");
 const { isSafeHttpUrl, fetchOgImage } = require("./og-image");
+
+/** Inversoro bloquea bots (Cloudflare). Trump no publica og:image útil en el HTML inicial. */
+const PRODUCT_THUMB_URL_OVERRIDE = {
+  "https://www.inversoro.es/lingotes-de-oro/lingote-de-12-5-kilo-oro/lingote-12-5-kilo-oro/":
+    "https://images.unsplash.com/photo-1614849963640-9ccc78bda087?auto=format&fit=crop&w=800&q=85",
+  "https://www.trumpcard.gov/apply":
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Donald_Trump_by_Gage_Skidmore_6.jpg/440px-Donald_Trump_by_Gage_Skidmore_6.jpg",
+};
+
+function rtrimUrlSlashes(s) {
+  return String(s || "").replace(/\/+$/, "");
+}
+
+function thumbOverrideForPageUrl(pageUrl) {
+  const u = rtrimUrlSlashes(String(pageUrl || "").trim());
+  if (!u) return null;
+  for (const [seedUrl, imgUrl] of Object.entries(PRODUCT_THUMB_URL_OVERRIDE)) {
+    if (rtrimUrlSlashes(seedUrl) === u) return imgUrl;
+  }
+  try {
+    const a = new URL(u);
+    const pathA = rtrimUrlSlashes(a.pathname) || "/";
+    for (const [seedUrl, imgUrl] of Object.entries(PRODUCT_THUMB_URL_OVERRIDE)) {
+      const b = new URL(seedUrl);
+      if (a.origin === b.origin && pathA === (rtrimUrlSlashes(b.pathname) || "/")) {
+        return imgUrl;
+      }
+    }
+  } catch {
+    /* noop */
+  }
+  return null;
+}
+
+function applyProductThumbOverrides(db) {
+  const stmt = db.prepare(`
+    UPDATE items SET image_url = ?
+    WHERE rtrim(url, '/') = rtrim(?, '/')
+  `);
+  for (const [productUrl, imgUrl] of Object.entries(PRODUCT_THUMB_URL_OVERRIDE)) {
+    if (isSafeHttpUrl(imgUrl)) stmt.run(imgUrl, productUrl);
+  }
+}
 
 const PORT = Number(process.env.PORT) || 3000;
 
@@ -36,15 +80,17 @@ if (process.env.RESEED_CATALOG === "1") {
   repairPremiumSections(db);
   applyPreviewFallbacks(db);
   console.warn(
-    "[Apartashower] RESEED_CATALOG=1: se cargó el catálogo por defecto (20 ítems). Quita RESEED_CATALOG del .env para no borrar la lista en cada arranque."
+    "[Apartashower] RESEED_CATALOG=1: se cargó el catálogo por defecto (19 ítems). Quita RESEED_CATALOG del .env para no borrar la lista en cada arranque."
   );
 } else if (seedIfEmpty(db)) {
   repairPremiumSections(db);
   applyPreviewFallbacks(db);
-  console.log("Catálogo inicial cargado (20 regalos).");
+  console.log("Catálogo inicial cargado (19 regalos).");
 }
 
 repairCatalogTitles(db);
+repairCatalogListEdits(db);
+applyProductThumbOverrides(db);
 
 const itemCount = db.prepare("SELECT COUNT(*) AS c FROM items").get().c;
 console.log(`[Apartashower] Regalos en la base de datos: ${itemCount}`);
@@ -122,6 +168,12 @@ app.post("/api/catalog/hydrate-previews", async (_req, res) => {
     async function one(row) {
       const pageUrl = String(row.url || "").trim();
       if (!pageUrl || !isSafeHttpUrl(pageUrl)) return;
+      const fixed = thumbOverrideForPageUrl(pageUrl);
+      if (fixed && isSafeHttpUrl(fixed)) {
+        upd.run(fixed, row.id);
+        out.push({ id: row.id, imageUrl: fixed });
+        return;
+      }
       const imageUrl = await fetchOgImage(pageUrl);
       if (imageUrl && isSafeHttpUrl(imageUrl)) {
         upd.run(imageUrl, row.id);

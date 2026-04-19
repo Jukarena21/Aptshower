@@ -1,5 +1,5 @@
 /**
- * Sustituye toda la lista por el catálogo por defecto (20 regalos).
+ * Sustituye toda la lista por el catálogo por defecto (19 regalos).
  * Úsalo si ya tenías pruebas en la base y la semilla automática no se aplicó.
  */
 require("dotenv").config();
@@ -11,6 +11,7 @@ const {
   replaceAllCatalog,
   repairPremiumSections,
   applyPreviewFallbacks,
+  repairCatalogListEdits,
   repairCatalogTitles,
 } = require("./catalog");
 
@@ -26,4 +27,5 @@ replaceAllCatalog(db);
 repairPremiumSections(db);
 applyPreviewFallbacks(db);
 repairCatalogTitles(db);
-console.log("Catálogo listo: 20 regalos (14 amigos + 6 premium). Arranca el servidor con npm start.");
+repairCatalogListEdits(db);
+console.log("Catálogo listo: 19 regalos (13 amigos + 6 premium). Arranca el servidor con npm start.");
