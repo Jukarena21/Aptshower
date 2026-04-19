@@ -175,23 +175,124 @@ function preferLdProductImagesFirst(hostname) {
     h.includes("inversoro") ||
     h.includes("lamborghini") ||
     h.includes("nvidia.com") ||
-    h.includes("terracoramg") ||
-    h.includes("trumpcard.gov")
+    h.includes("terracoramg")
   );
+}
+
+/** <link rel="icon|apple-touch-icon" href="…"> cuando no hay og:image. */
+function collectLinkIconImages(html) {
+  const out = [];
+  const push = (raw) => {
+    const u = normalizeImgCandidate(raw);
+    if (u) out.push(u);
+  };
+  const relIcon =
+    /<link[^>]+rel=["'][^"']*(?:apple-touch-icon|icon)[^"']*["'][^>]*href=["']([^"']+)["']/gi;
+  const hrefIcon =
+    /<link[^>]+href=["']([^"']+)["'][^>]*rel=["'][^"']*(?:apple-touch-icon|icon)[^"']*["']/gi;
+  let m;
+  while ((m = relIcon.exec(html)) !== null) push(m[1]);
+  while ((m = hrefIcon.exec(html)) !== null) push(m[1]);
+  return out;
+}
+
+/** <img src="…"> del HTML inicial (Drupal, Next sin metas, etc.). */
+function collectBodyImgSrcs(html) {
+  const out = [];
+  const re = /<img\b[^>]*\bsrc=["']([^"']+)["'][^>]*>/gi;
+  let m;
+  while ((m = re.exec(html)) !== null) {
+    const raw = m[1];
+    if (!raw || /^data:/i.test(raw) || /^about:/i.test(raw)) continue;
+    const u = normalizeImgCandidate(raw);
+    if (u) out.push(u);
+  }
+  return out;
+}
+
+function scoreIcbfCandidate(absoluteHref) {
+  const lower = String(absoluteHref || "").toLowerCase();
+  let s = 0;
+  if (lower.includes("icbf-logo")) s += 120;
+  if (lower.includes("logo_colombiapotencia")) s += 110;
+  if (lower.includes("/sites/default/files/") && /\.(png|jpe?g|webp)(\?|$)/.test(lower)) s += 35;
+  if (lower.includes("web-ada-icons")) s += 25;
+  if (lower.includes("icon-") || lower.includes("icons-trhome")) s -= 90;
+  if (lower.includes("favicon")) s -= 100;
+  if (lower.endsWith(".svg")) s -= 15;
+  return s;
+}
+
+function scoreTrumpCandidate(absoluteHref) {
+  const lower = String(absoluteHref || "").toLowerCase();
+  let s = 0;
+  if (lower.includes("usa-flag")) s -= 200;
+  if (/\.(png|jpe?g|webp)(\?|$)/.test(lower)) s += 60;
+  if (lower.includes("favicon")) s += 15;
+  if (lower.endsWith(".svg")) s += 5;
+  return s;
+}
+
+function pickBestPreview(pageUrl, absList) {
+  if (!absList.length) return null;
+  try {
+    const h = new URL(pageUrl).hostname.toLowerCase();
+    if (h.includes("falabella")) {
+      let best = absList[0];
+      let bestScore = scorePreviewCandidate(pageUrl, best);
+      for (let i = 1; i < absList.length; i++) {
+        const s = scorePreviewCandidate(pageUrl, absList[i]);
+        if (s > bestScore) {
+          bestScore = s;
+          best = absList[i];
+        }
+      }
+      return best;
+    }
+    if (h.includes("icbf.gov.co")) {
+      let best = absList[0];
+      let bestScore = scoreIcbfCandidate(best);
+      for (let i = 1; i < absList.length; i++) {
+        const s = scoreIcbfCandidate(absList[i]);
+        if (s > bestScore) {
+          bestScore = s;
+          best = absList[i];
+        }
+      }
+      return best;
+    }
+    if (h.includes("trumpcard.gov")) {
+      let best = absList[0];
+      let bestScore = scoreTrumpCandidate(best);
+      for (let i = 1; i < absList.length; i++) {
+        const s = scoreTrumpCandidate(absList[i]);
+        if (s > bestScore) {
+          bestScore = s;
+          best = absList[i];
+        }
+      }
+      return best;
+    }
+  } catch {
+    /* primera */
+  }
+  return absList[0];
 }
 
 function extractPreviewImageUrl(html, pageUrl) {
   if (!html || !pageUrl) return null;
   const metaImages = collectMetaPreviewImages(html);
   const ldProductImages = collectLdJsonProductImages(html);
+  const linkIcons = collectLinkIconImages(html);
+  const bodyImgs = collectBodyImgSrcs(html);
   let ordered;
   try {
     const h = new URL(pageUrl).hostname;
     ordered = preferLdProductImagesFirst(h)
-      ? [...ldProductImages, ...metaImages]
-      : [...metaImages, ...ldProductImages];
+      ? [...ldProductImages, ...metaImages, ...linkIcons, ...bodyImgs]
+      : [...metaImages, ...ldProductImages, ...linkIcons, ...bodyImgs];
   } catch {
-    ordered = [...metaImages, ...ldProductImages];
+    ordered = [...metaImages, ...ldProductImages, ...linkIcons, ...bodyImgs];
   }
   const seen = new Set();
   const dedup = [];
@@ -212,24 +313,7 @@ function extractPreviewImageUrl(html, pageUrl) {
     }
   }
   if (!absList.length) return null;
-  try {
-    const h = new URL(pageUrl).hostname.toLowerCase();
-    if (h.includes("falabella")) {
-      let best = absList[0];
-      let bestScore = scorePreviewCandidate(pageUrl, best);
-      for (let i = 1; i < absList.length; i++) {
-        const s = scorePreviewCandidate(pageUrl, absList[i]);
-        if (s > bestScore) {
-          bestScore = s;
-          best = absList[i];
-        }
-      }
-      return best;
-    }
-  } catch {
-    /* primera URL válida */
-  }
-  return absList[0];
+  return pickBestPreview(pageUrl, absList);
 }
 
 async function readLimitedHtml(response, maxBytes) {
@@ -258,10 +342,23 @@ async function readLimitedHtml(response, maxBytes) {
   return buf.subarray(0, Math.min(buf.length, maxBytes)).toString("utf8");
 }
 
-async function fetchOgImage(pageUrl) {
+function isNvidiaMarketplaceRtx5090Url(pageUrl) {
+  try {
+    const u = new URL(pageUrl);
+    if (!u.hostname.toLowerCase().includes("marketplace.nvidia.com")) return false;
+    return /rtx[-_]?5090|5090|geforce.*5090/i.test(u.pathname + u.search);
+  } catch {
+    return false;
+  }
+}
+
+const NVIDIA_RTX5090_LEARN_PAGE =
+  "https://www.nvidia.com/en-us/geforce/graphics-cards/50-series/rtx-5090/";
+
+async function fetchHtmlForPreview(pageUrl) {
   if (!isSafeHttpUrl(pageUrl)) return null;
   const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), FETCH_TIMEOUT_MS);
+  const timer = setTimeout(() => ctrl.abort(), FETCH_TIMEOUT_MS);
   try {
     const res = await undiciFetch(pageUrl, {
       method: "GET",
@@ -270,7 +367,7 @@ async function fetchOgImage(pageUrl) {
       headers: {
         "User-Agent": UA,
         Accept: "text/html,application/xhtml+xml;q=0.9,*/*;q=0.8",
-        "Accept-Language": "es-ES,es;q=0.9,en;q=0.8",
+        "Accept-Language": "es-ES,es;q=0.9,en-US,en;q=0.8",
       },
     });
     if (!res.ok) return null;
@@ -279,13 +376,29 @@ async function fetchOgImage(pageUrl) {
       return null;
     }
     const html = await readLimitedHtml(res, MAX_BYTES);
-    const finalUrl = res.url || pageUrl;
-    return extractPreviewImageUrl(html, finalUrl);
+    return { html, finalUrl: res.url || pageUrl };
   } catch {
     return null;
   } finally {
-    clearTimeout(t);
+    clearTimeout(timer);
   }
+}
+
+async function fetchOgImage(pageUrl) {
+  if (!isSafeHttpUrl(pageUrl)) return null;
+  const first = await fetchHtmlForPreview(pageUrl);
+  if (first) {
+    const img = extractPreviewImageUrl(first.html, first.finalUrl);
+    if (img) return img;
+  }
+  if (isNvidiaMarketplaceRtx5090Url(pageUrl)) {
+    const alt = await fetchHtmlForPreview(NVIDIA_RTX5090_LEARN_PAGE);
+    if (alt) {
+      const img = extractPreviewImageUrl(alt.html, alt.finalUrl);
+      if (img) return img;
+    }
+  }
+  return null;
 }
 
 module.exports = {
