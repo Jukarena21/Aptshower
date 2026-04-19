@@ -1,0 +1,1630 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lista de regalos — Apartashower</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #ececf0;
+      --surface: #ffffff;
+      --ink: #18181b;
+      --muted: #71717a;
+      --line: #e4e4e7;
+      --line-strong: #d4d4d8;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.06);
+      --radius: 12px;
+      --media-bg: #e4e4e7;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "DM Sans", system-ui, sans-serif;
+      background: #120a18;
+      color: var(--ink);
+      line-height: 1.5;
+    }
+    .top {
+      background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
+      border-bottom: 1px solid var(--line);
+      padding: 1.65rem 1rem 1.5rem;
+      text-align: center;
+      box-shadow: 0 12px 40px rgba(15, 23, 42, 0.06);
+    }
+    .top .tag {
+      display: inline-block;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border: 1px solid var(--line);
+      background: var(--bg);
+      padding: 0.28rem 0.6rem;
+      border-radius: 999px;
+      margin-bottom: 0.55rem;
+    }
+    .top h1 {
+      margin: 0 0 0.35rem;
+      font-size: clamp(1.45rem, 4vw, 1.75rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .top__names {
+      margin: 0.2rem auto 0.65rem;
+      max-width: 34rem;
+      font-size: clamp(1.08rem, 3vw, 1.35rem);
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: var(--ink);
+    }
+    .top p:not(.top__names) {
+      margin: 0 auto;
+      max-width: 34rem;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+    .inner {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+    .stripe--budget {
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      background:
+        radial-gradient(ellipse 90% 50% at 30% 10%, rgba(255, 255, 255, 0.07), transparent 45%),
+        radial-gradient(ellipse 70% 40% at 80% 90%, rgba(0, 0, 0, 0.2), transparent 50%),
+        repeating-linear-gradient(
+          -11deg,
+          transparent,
+          transparent 4px,
+          rgba(0, 0, 0, 0.045) 4px,
+          rgba(0, 0, 0, 0.045) 5px
+        ),
+        linear-gradient(165deg, #6d523c 0%, #4d3a2a 42%, #3d2e22 100%);
+      padding: 1.35rem 0 2.6rem;
+      box-shadow: inset 0 8px 32px rgba(0, 0, 0, 0.22);
+    }
+    .stripe--budget > .inner {
+      position: relative;
+      z-index: 1;
+    }
+    /* Capa decorativa: grieta tipo vidrio, moscas, emoji (solo zona bajos recursos) */
+    .budget-fx {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .budget-fx__crack {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      opacity: 0.55;
+      mix-blend-mode: soft-light;
+    }
+    .budget-fx__crack path {
+      fill: none;
+      stroke: rgba(255, 255, 255, 0.28);
+      stroke-width: 0.55;
+      vector-effect: non-scaling-stroke;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      filter: drop-shadow(0.6px 0.8px 0 rgba(0, 0, 0, 0.4));
+    }
+    .budget-fx__crack path:nth-child(even) {
+      stroke: rgba(0, 0, 0, 0.22);
+      stroke-width: 0.42;
+    }
+    .budget-fx__poo-swarm {
+      position: absolute;
+      z-index: 1;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .budget-fx__poo-bit {
+      position: absolute;
+      line-height: 1;
+      opacity: 0.38;
+      user-select: none;
+      filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.28));
+      animation: budget-poo-float 6.5s ease-in-out infinite;
+      will-change: transform;
+    }
+    .budget-fx__poo-bit:nth-child(5n) {
+      animation-duration: 5.2s;
+    }
+    .budget-fx__poo-bit:nth-child(5n + 1) {
+      animation-duration: 7.1s;
+    }
+    .budget-fx__poo-bit:nth-child(5n + 2) {
+      animation-duration: 8.4s;
+    }
+    .budget-fx__poo-bit:nth-child(5n + 3) {
+      animation-duration: 6s;
+    }
+    .budget-fx__poo-bit:nth-child(5n + 4) {
+      animation-duration: 7.8s;
+    }
+    @keyframes budget-poo-float {
+      0%, 100% {
+        transform: translate(0, 0) rotate(-10deg) scale(1);
+      }
+      33% {
+        transform: translate(6px, -12px) rotate(8deg) scale(1.06);
+      }
+      66% {
+        transform: translate(-8px, 8px) rotate(14deg) scale(0.96);
+      }
+    }
+    .budget-fx__fly {
+      position: absolute;
+      z-index: 2;
+      width: 9px;
+      height: 6px;
+      background: radial-gradient(ellipse at 30% 40%, #2a2a2a 0%, #0d0d0d 100%);
+      border-radius: 50%;
+      opacity: 0.72;
+      box-shadow: 0 0 2px rgba(0, 0, 0, 0.6);
+    }
+    .budget-fx__fly::before,
+    .budget-fx__fly::after {
+      content: "";
+      position: absolute;
+      width: 4px;
+      height: 2px;
+      background: rgba(35, 35, 35, 0.85);
+      border-radius: 50%;
+      top: -1px;
+      animation: fly-wing 0.1s ease-in-out infinite alternate;
+    }
+    .budget-fx__fly::before {
+      left: -2px;
+      transform: rotate(-25deg);
+    }
+    .budget-fx__fly::after {
+      right: -2px;
+      transform: rotate(25deg);
+      animation-delay: 0.04s;
+    }
+    @keyframes fly-wing {
+      from { opacity: 0.35; }
+      to { opacity: 1; }
+    }
+    @keyframes fly-path-1 {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      20% { transform: translate(18vw, 12px) rotate(18deg); }
+      40% { transform: translate(28vw, -8px) rotate(-8deg); }
+      60% { transform: translate(15vw, 22px) rotate(25deg); }
+      80% { transform: translate(-5vw, 8px) rotate(-12deg); }
+      100% { transform: translate(0, 0) rotate(0deg); }
+    }
+    @keyframes fly-path-2 {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      25% { transform: translate(-22vw, 18px) rotate(-22deg); }
+      50% { transform: translate(-35vw, -14px) rotate(15deg); }
+      75% { transform: translate(-12vw, 24px) rotate(8deg); }
+      100% { transform: translate(0, 0) rotate(0deg); }
+    }
+    @keyframes fly-path-3 {
+      0% { transform: translate(0, 0); }
+      33% { transform: translate(40vw, -20px); }
+      66% { transform: translate(55vw, 10px); }
+      100% { transform: translate(0, 0); }
+    }
+    @keyframes fly-path-4 {
+      0% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(-18vw, 35px) scale(0.95); }
+      100% { transform: translate(0, 0) scale(1); }
+    }
+    @keyframes fly-path-5 {
+      0% { transform: translate(0, 0); }
+      20% { transform: translate(8vw, -28px); }
+      45% { transform: translate(-25vw, -12px); }
+      70% { transform: translate(-15vw, 20px); }
+      100% { transform: translate(0, 0); }
+    }
+    @keyframes fly-path-6 {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      15% { transform: translate(25vw, 30px) rotate(20deg); }
+      35% { transform: translate(10vw, -25px) rotate(-15deg); }
+      55% { transform: translate(-30vw, 15px) rotate(10deg); }
+      75% { transform: translate(-8vw, 40px) rotate(-25deg); }
+      100% { transform: translate(0, 0) rotate(0deg); }
+    }
+    @keyframes fly-path-7 {
+      0% { transform: translate(0, 0); }
+      25% { transform: translate(-15vw, -35px); }
+      50% { transform: translate(20vw, 8px); }
+      75% { transform: translate(35vw, -18px); }
+      100% { transform: translate(0, 0); }
+    }
+    @keyframes fly-path-8 {
+      0% { transform: translate(0, 0) scale(1); }
+      20% { transform: translate(12vw, 45px) scale(0.92); }
+      40% { transform: translate(-20vw, -8px) scale(1.05); }
+      60% { transform: translate(8vw, -40px) scale(0.9); }
+      80% { transform: translate(-12vw, 22px) scale(1); }
+      100% { transform: translate(0, 0) scale(1); }
+    }
+    .stripe--footer {
+      width: 100%;
+      background: #0a0810;
+      padding: 1.75rem 0 2.25rem;
+      color: rgba(255, 255, 255, 0.42);
+      font-size: 0.8rem;
+      text-align: center;
+    }
+    .note {
+      display: flex;
+      gap: 0.55rem;
+      align-items: flex-start;
+      padding: 0.85rem 1rem;
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid rgba(228, 228, 231, 0.9);
+      border-radius: var(--radius);
+      font-size: 0.86rem;
+      color: var(--muted);
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(8px);
+    }
+    .stripe--budget .note {
+      background: rgba(255, 252, 245, 0.97);
+      border: 1px solid rgba(40, 30, 20, 0.2);
+      color: #4a3f35;
+      box-shadow: 2px 3px 0 rgba(0, 0, 0, 0.12);
+    }
+    .stripe--budget .note a {
+      color: #7c2d12;
+    }
+    .note svg { flex-shrink: 0; margin-top: 0.1rem; opacity: 0.55; }
+    .note a {
+      color: var(--ink);
+      font-weight: 600;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .section { margin-top: 1.75rem; }
+    .section:first-of-type { margin-top: 0.15rem; }
+    .stripe--budget .section,
+    .premium-zone.section {
+      margin-top: 0;
+    }
+    /* “Bajos recursos”: tablón + notas (sin gris oficina) */
+    .friends-shell {
+      position: relative;
+      margin-top: 0;
+      padding: 0;
+      color: #2c241c;
+      font-family: "DM Sans", system-ui, sans-serif;
+    }
+    .friends-shell .section-head {
+      margin-bottom: 1.1rem;
+      padding-bottom: 0.65rem;
+      border-bottom: 2px dashed rgba(255, 230, 200, 0.25);
+    }
+    .friends-shell .section-head h2 {
+      font-size: clamp(1.15rem, 3vw, 1.35rem);
+      font-weight: 700;
+      font-style: normal;
+      color: #fff8ee;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+      letter-spacing: -0.02em;
+    }
+    .friends-shell .section-head p {
+      font-size: 0.82rem;
+      color: rgba(255, 235, 210, 0.82);
+      letter-spacing: 0.03em;
+      text-transform: none;
+    }
+    .friends-shell .card-grid {
+      position: relative;
+      z-index: 1;
+      gap: 1rem;
+    }
+    .friends-shell .card {
+      border: none;
+      border-radius: 3px 10px 5px 4px;
+      background: #fffef8;
+      box-shadow:
+        1px 2px 0 rgba(0, 0, 0, 0.12),
+        3px 5px 14px rgba(0, 0, 0, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.85);
+      transform: rotate(-0.6deg);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .friends-shell .card:nth-child(3n + 2) {
+      transform: rotate(0.45deg);
+    }
+    .friends-shell .card:nth-child(3n) {
+      transform: rotate(0.2deg);
+    }
+    .friends-shell .card__media {
+      background: #ebe6dc;
+      border-bottom: 1px solid rgba(60, 45, 30, 0.12);
+    }
+    .friends-shell .card__img {
+      filter: sepia(0.18) saturate(0.92) contrast(0.98);
+    }
+    .friends-shell .card__ph {
+      background: linear-gradient(150deg, #f0ebe3 0%, #ddd5c8 100%);
+    }
+    .friends-shell .card__ph::after {
+      opacity: 0.22;
+    }
+    .friends-shell .card__body {
+      background: transparent;
+    }
+    .friends-shell .card__label {
+      font-size: 0.58rem;
+      color: #8a5a2b;
+      letter-spacing: 0.14em;
+    }
+    .friends-shell .card h3 {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: #2a241c;
+      line-height: 1.35;
+    }
+    .friends-shell .card__foot {
+      border-top: 1px solid rgba(60, 45, 30, 0.1);
+      background: rgba(255, 250, 240, 0.6);
+    }
+    .friends-shell a.link {
+      color: #9a3412;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+    .friends-shell a.link:hover {
+      color: #c2410c;
+    }
+    .friends-shell .btn {
+      background: linear-gradient(180deg, #ea580c 0%, #c2410c 100%);
+      color: #fff;
+      border: 1px solid rgba(124, 45, 18, 0.5);
+      box-shadow: 0 2px 0 rgba(0, 0, 0, 0.15);
+    }
+    .friends-shell .btn:hover {
+      background: linear-gradient(180deg, #f97316 0%, #ea580c 100%);
+      color: #fff;
+    }
+    .friends-shell .btn-secondary {
+      border: 1px solid rgba(120, 90, 60, 0.35);
+      color: #5c4a3a;
+      background: rgba(255, 255, 255, 0.65);
+    }
+    .friends-shell .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.9);
+      color: #3d3028;
+    }
+    .friends-shell .card--reserved {
+      opacity: 1;
+      background: #f5f0e6;
+      box-shadow:
+        1px 2px 0 rgba(0, 0, 0, 0.08),
+        2px 4px 10px rgba(0, 0, 0, 0.15);
+    }
+    .friends-shell .card--reserved .card__img {
+      filter: sepia(0.35) saturate(0.75);
+      opacity: 0.92;
+    }
+    .friends-shell .card__reserved {
+      background: rgba(254, 243, 199, 0.85);
+      border: 1px solid rgba(180, 130, 60, 0.35);
+      color: #713f12;
+      font-size: 0.8rem;
+    }
+    .friends-shell .card__reserved-hint {
+      color: #92400e;
+      opacity: 0.9;
+    }
+    .friends-shell .empty {
+      background: rgba(255, 252, 245, 0.12);
+      border: 2px dashed rgba(255, 220, 180, 0.35);
+      color: rgba(255, 235, 210, 0.75);
+      font-size: 0.88rem;
+    }
+    .section-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 0.35rem 1rem;
+      margin-bottom: 1rem;
+    }
+    .section-head h2 {
+      margin: 0;
+      font-size: 1.12rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .section-head p {
+      margin: 0;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    /* —— Zona premium: escenario oscuro + cartas 3D exageradas —— */
+    .premium-zone {
+      position: relative;
+      margin-top: 0;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 2.35rem 0 2.85rem;
+      border-radius: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(168, 85, 247, 0.35), transparent 55%),
+        radial-gradient(ellipse 60% 40% at 100% 100%, rgba(234, 179, 8, 0.12), transparent 50%),
+        linear-gradient(165deg, #0f0a1a 0%, #1e1035 38%, #0c1222 72%, #070a12 100%);
+      border: none;
+      border-top: 1px solid rgba(250, 204, 21, 0.18);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.35);
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+        0 4px 24px rgba(0, 0, 0, 0.35),
+        0 0 80px rgba(88, 28, 135, 0.35),
+        0 0 120px rgba(234, 179, 8, 0.12);
+      overflow: hidden;
+      animation: premium-arena-glow 5s ease-in-out infinite;
+    }
+    @keyframes premium-arena-glow {
+      0%, 100% {
+        box-shadow:
+          0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+          0 4px 24px rgba(0, 0, 0, 0.35),
+          0 0 80px rgba(88, 28, 135, 0.35),
+          0 0 100px rgba(234, 179, 8, 0.1);
+      }
+      50% {
+        box-shadow:
+          0 0 0 1px rgba(255, 255, 255, 0.09) inset,
+          0 8px 40px rgba(0, 0, 0, 0.45),
+          0 0 100px rgba(168, 85, 247, 0.45),
+          0 0 140px rgba(250, 204, 21, 0.22);
+      }
+    }
+    .premium-zone::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background-image:
+        radial-gradient(1.5px 1.5px at 10% 20%, rgba(255, 255, 255, 0.35), transparent),
+        radial-gradient(1px 1px at 80% 40%, rgba(255, 255, 255, 0.2), transparent),
+        radial-gradient(1px 1px at 30% 80%, rgba(255, 255, 255, 0.25), transparent),
+        radial-gradient(1.5px 1.5px at 60% 60%, rgba(253, 224, 71, 0.4), transparent);
+      background-size: 100% 100%;
+      opacity: 0.45;
+      pointer-events: none;
+      animation: premium-twinkle 8s ease-in-out infinite;
+    }
+    @keyframes premium-twinkle {
+      0%, 100% { opacity: 0.35; }
+      50% { opacity: 0.55; }
+    }
+    .premium-zone::after {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      z-index: 0;
+      background: conic-gradient(from 0deg, transparent, rgba(250, 204, 21, 0.03), transparent 25%, rgba(168, 85, 247, 0.05), transparent 55%);
+      animation: premium-slow-spin 28s linear infinite;
+      pointer-events: none;
+    }
+    @keyframes premium-slow-spin {
+      to { transform: rotate(360deg); }
+    }
+    .premium-zone > .inner {
+      position: relative;
+      z-index: 2;
+    }
+    .premium-fx {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      overflow: hidden;
+    }
+    .premium-fx__emoji {
+      position: absolute;
+      font-size: clamp(1.15rem, 3.2vw, 2rem);
+      line-height: 1;
+      opacity: 0.5;
+      animation: premium-fx-drift 7s ease-in-out infinite;
+      filter: drop-shadow(0 0 10px rgba(250, 204, 21, 0.35));
+      user-select: none;
+    }
+    .premium-fx__emoji--slow {
+      animation-duration: 11s;
+    }
+    .premium-fx__emoji--fast {
+      animation-duration: 4.5s;
+    }
+    @keyframes premium-fx-drift {
+      0%, 100% { transform: translate(0, 0) rotate(-6deg) scale(1); }
+      33% { transform: translate(8px, -12px) rotate(4deg) scale(1.05); }
+      66% { transform: translate(-6px, 6px) rotate(8deg) scale(0.98); }
+    }
+    .premium-fx__cam-wrap {
+      position: absolute;
+      font-size: clamp(1.35rem, 3.8vw, 2.35rem);
+      line-height: 1;
+      animation: premium-fx-drift 5.5s ease-in-out infinite;
+    }
+    .premium-fx__cam-ico {
+      position: relative;
+      z-index: 2;
+      display: inline-block;
+    }
+    .premium-fx__cam-wrap .premium-fx__flash {
+      position: absolute;
+      left: 50%;
+      top: 35%;
+      width: min(140px, 45vw);
+      height: min(140px, 45vw);
+      margin-left: calc(min(140px, 45vw) / -2);
+      margin-top: calc(min(140px, 45vw) / -2);
+      background: radial-gradient(
+        circle,
+        rgba(255, 255, 255, 0.95) 0%,
+        rgba(255, 250, 220, 0.45) 28%,
+        transparent 62%
+      );
+      opacity: 0;
+      animation: premium-cam-flash 2.5s ease-in-out infinite;
+      pointer-events: none;
+      mix-blend-mode: screen;
+    }
+    @keyframes premium-cam-flash {
+      0%, 78%, 100% { opacity: 0; transform: scale(0.15); }
+      84% { opacity: 0.92; transform: scale(1); }
+      91% { opacity: 0; transform: scale(1.08); }
+    }
+    .premium-zone .section-head {
+      position: relative;
+      z-index: 1;
+      margin-bottom: 1.35rem;
+    }
+    .premium-zone .section-head h2 {
+      font-family: "Syne", "DM Sans", sans-serif;
+      font-size: clamp(1.35rem, 4vw, 1.95rem);
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      background: linear-gradient(110deg, #fef9c3 0%, #fde047 35%, #fbbf24 55%, #e9d5ff 85%, #fef9c3 100%);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: premium-title-shine 6s ease-in-out infinite;
+      filter: drop-shadow(0 0 24px rgba(250, 204, 21, 0.35));
+    }
+    @keyframes premium-title-shine {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+    .premium-zone .section-head p {
+      color: rgba(228, 228, 231, 0.55);
+      font-size: 0.82rem;
+      letter-spacing: 0.02em;
+    }
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(252px, 1fr));
+      gap: 0.85rem;
+      align-items: stretch;
+    }
+    .card-grid--premium {
+      position: relative;
+      z-index: 1;
+      gap: 1.35rem;
+      perspective: 1400px;
+      perspective-origin: 50% 30%;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      min-height: 100%;
+      transition: border-color 0.15s, box-shadow 0.15s, transform 0.12s;
+    }
+    .friends-shell .card:not(.card--reserved):hover {
+      transform: rotate(0deg) translateY(-4px) scale(1.01);
+      box-shadow:
+        2px 4px 0 rgba(0, 0, 0, 0.1),
+        6px 12px 28px rgba(0, 0, 0, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      z-index: 2;
+    }
+    .premium-zone .card--premium {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(250, 204, 21, 0.45);
+      border-radius: 14px;
+      background: linear-gradient(
+        165deg,
+        rgba(255, 255, 255, 0.14) 0%,
+        rgba(255, 255, 255, 0.04) 45%,
+        rgba(15, 23, 42, 0.65) 100%
+      );
+      backdrop-filter: blur(10px);
+      transform-style: preserve-3d;
+      transform: translateZ(0);
+      animation:
+        premium-float 4.2s ease-in-out infinite,
+        premium-shadow-pulse 3s ease-in-out infinite;
+      transition: filter 0.2s;
+    }
+    .premium-zone .card--premium:nth-child(1) { animation-delay: 0s, 0s; }
+    .premium-zone .card--premium:nth-child(2) { animation-delay: 0.2s, 0.15s; }
+    .premium-zone .card--premium:nth-child(3) { animation-delay: 0.4s, 0.3s; }
+    .premium-zone .card--premium:nth-child(4) { animation-delay: 0.6s, 0.45s; }
+    .premium-zone .card--premium:nth-child(5) { animation-delay: 0.8s, 0.6s; }
+    .premium-zone .card--premium:nth-child(6) { animation-delay: 1s, 0.75s; }
+    @keyframes premium-float {
+      0%, 100% {
+        transform: translateY(0) rotateX(6deg) rotateY(-5deg) translateZ(12px);
+      }
+      50% {
+        transform: translateY(-14px) rotateX(10deg) rotateY(5deg) translateZ(28px);
+      }
+    }
+    @keyframes premium-shadow-pulse {
+      0%, 100% {
+        box-shadow:
+          0 12px 28px rgba(0, 0, 0, 0.55),
+          0 0 0 1px rgba(250, 204, 21, 0.35),
+          0 0 32px rgba(234, 179, 8, 0.25),
+          0 0 60px rgba(168, 85, 247, 0.2),
+          inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      }
+      50% {
+        box-shadow:
+          0 22px 48px rgba(0, 0, 0, 0.65),
+          0 0 0 2px rgba(253, 224, 71, 0.65),
+          0 0 48px rgba(234, 179, 8, 0.55),
+          0 0 90px rgba(168, 85, 247, 0.45),
+          inset 0 1px 0 rgba(255, 255, 255, 0.35);
+      }
+    }
+    .premium-zone .card--premium::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      border-radius: inherit;
+      background: linear-gradient(
+        125deg,
+        rgba(255, 255, 255, 0) 35%,
+        rgba(255, 255, 255, 0.22) 48%,
+        rgba(255, 255, 255, 0) 62%
+      );
+      background-size: 220% 100%;
+      animation: premium-sheen 4s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 3;
+      mix-blend-mode: overlay;
+    }
+    @keyframes premium-sheen {
+      0%, 100% { background-position: 120% 0; opacity: 0.4; }
+      50% { background-position: -20% 0; opacity: 0.9; }
+    }
+    .premium-zone .card--premium:not(.card--reserved):hover {
+      animation-play-state: paused;
+      filter: brightness(1.08) saturate(1.15);
+      transform: translateY(-18px) rotateX(12deg) rotateY(8deg) scale(1.02) translateZ(40px);
+      z-index: 5;
+    }
+    .premium-zone .card--premium .card__media {
+      position: relative;
+      z-index: 2;
+      border-bottom-color: rgba(250, 204, 21, 0.25);
+      box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.35);
+    }
+    .premium-zone .card--premium .card__label {
+      color: #fde047;
+      text-shadow: 0 0 20px rgba(250, 204, 21, 0.5);
+      letter-spacing: 0.14em;
+    }
+    .premium-zone .card--premium h3 {
+      color: #fafafa;
+      text-shadow: 0 2px 16px rgba(0, 0, 0, 0.5);
+    }
+    .premium-zone .card--premium a.link {
+      color: #fde68a;
+      text-shadow: 0 0 12px rgba(250, 204, 21, 0.35);
+    }
+    .premium-zone .card--premium a.link:hover {
+      color: #fef9c3;
+    }
+    .premium-zone .card--premium .btn {
+      background: linear-gradient(135deg, #facc15 0%, #eab308 40%, #ca8a04 100%);
+      color: #1c1917;
+      font-weight: 700;
+      box-shadow: 0 4px 14px rgba(234, 179, 8, 0.45);
+    }
+    .premium-zone .card--premium .btn:hover {
+      background: linear-gradient(135deg, #fde047 0%, #facc15 50%, #eab308 100%);
+    }
+    .premium-zone .card--premium .btn-secondary {
+      border-color: rgba(253, 224, 71, 0.35);
+      color: rgba(254, 243, 199, 0.85);
+      background: rgba(0, 0, 0, 0.25);
+    }
+    .premium-zone .card--premium .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border-color: rgba(253, 224, 71, 0.55);
+    }
+    .premium-zone .card--premium .card__foot {
+      border-top-color: rgba(250, 204, 21, 0.2);
+    }
+    .premium-zone .card--premium.card--reserved {
+      opacity: 0.95;
+      background: linear-gradient(165deg, rgba(30, 27, 46, 0.95), rgba(15, 23, 42, 0.9));
+      animation: premium-float 4.2s ease-in-out infinite, premium-shadow-pulse 3s ease-in-out infinite;
+    }
+    .premium-zone .card--premium .card__reserved {
+      background: rgba(0, 0, 0, 0.35);
+      border-color: rgba(250, 204, 21, 0.2);
+      color: #f4f4f5;
+    }
+    .premium-zone .card--premium .card__reserved-hint {
+      color: rgba(228, 228, 231, 0.55);
+    }
+    .premium-zone .card--premium .card__body,
+    .premium-zone .card--premium .card__foot {
+      position: relative;
+      z-index: 4;
+    }
+    .empty--premium {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px dashed rgba(250, 204, 21, 0.25);
+      color: rgba(228, 228, 231, 0.65);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .friends-shell .card,
+      .friends-shell .card:nth-child(3n + 2),
+      .friends-shell .card:nth-child(3n) {
+        transform: none !important;
+      }
+      .friends-shell .card:not(.card--reserved):hover {
+        transform: translateY(-2px) !important;
+      }
+      .budget-fx__fly,
+      .budget-fx__fly::before,
+      .budget-fx__fly::after {
+        animation: none !important;
+      }
+      .budget-fx__poo-bit {
+        animation: none !important;
+      }
+      .budget-fx__crack {
+        opacity: 0.35;
+      }
+      .premium-fx__emoji,
+      .premium-fx__cam-wrap {
+        animation: none !important;
+      }
+      .premium-fx__flash {
+        animation: none !important;
+        opacity: 0 !important;
+      }
+      .premium-zone,
+      .premium-zone::after,
+      .premium-zone .section-head h2,
+      .premium-zone .card--premium,
+      .premium-zone .card--premium::before {
+        animation: none !important;
+      }
+      .premium-zone .card--premium {
+        transform: none;
+      }
+      .premium-zone .card--premium:not(.card--reserved):hover {
+        transform: translateY(-4px);
+        filter: none;
+      }
+    }
+    .card--reserved {
+      opacity: 0.97;
+      border-color: #d4d4d8;
+      background: #fafafa;
+    }
+    .card--reserved .card__media {
+      filter: saturate(0.88);
+    }
+    .card__reserved {
+      margin: 0.5rem 0 0;
+      padding: 0.45rem 0.55rem;
+      font-size: 0.84rem;
+      line-height: 1.35;
+      color: var(--ink);
+      background: #f4f4f5;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+    .card__reserved strong {
+      font-weight: 700;
+      font-size: 0.92rem;
+    }
+    .card__reserved-hint {
+      margin: 0.35rem 0 0;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+    .card__media {
+      position: relative;
+      aspect-ratio: 16 / 10;
+      background: var(--media-bg);
+      border-bottom: 1px solid var(--line);
+    }
+    .card__ph {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(135deg, #fafafa 0%, #f4f4f5 40%, #e4e4e7 100%);
+      opacity: 1;
+    }
+    .card__ph::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        -12deg,
+        transparent,
+        transparent 10px,
+        rgba(255, 255, 255, 0.35) 10px,
+        rgba(255, 255, 255, 0.35) 11px
+      );
+      opacity: 0.5;
+      pointer-events: none;
+    }
+    .card__img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 1;
+      display: block;
+    }
+    .card__body {
+      padding: 0.75rem 0.85rem 0.2rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .card__label {
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.25rem;
+    }
+    .card h3 {
+      margin: 0;
+      font-size: 0.95rem;
+      font-weight: 600;
+      line-height: 1.35;
+    }
+    .card__foot {
+      margin-top: auto;
+      padding: 0.75rem 0.85rem 0.85rem;
+      border-top: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+    .row-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      align-items: center;
+    }
+    a.link {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--ink);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    a.link:hover { color: #3f3f46; }
+    button {
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      border-radius: 9px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 0.42rem 0.75rem;
+      transition: background 0.12s, transform 0.08s;
+    }
+    button:active { transform: scale(0.98); }
+    .btn {
+      background: var(--ink);
+      color: #fafafa;
+    }
+    .btn:hover { background: #27272a; }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-secondary {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--line-strong);
+    }
+    .btn-secondary:hover {
+      background: var(--bg);
+      color: var(--ink);
+      border-color: var(--line-strong);
+    }
+    .empty {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 1.75rem 1rem;
+      color: var(--muted);
+      font-size: 0.88rem;
+      background: var(--surface);
+      border: 1px dashed var(--line);
+      border-radius: var(--radius);
+    }
+    footer {
+      margin-top: 2rem;
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+    footer a {
+      color: var(--ink);
+      font-weight: 600;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    footer a:hover { color: #3f3f46; }
+    .toast {
+      position: fixed;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(140%);
+      background: var(--ink);
+      color: #fafafa;
+      padding: 0.55rem 0.95rem;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      opacity: 0;
+      transition: transform 0.2s, opacity 0.2s;
+      z-index: 100;
+      max-width: min(92vw, 420px);
+      text-align: center;
+    }
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(24, 24, 27, 0.5);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 1rem;
+      z-index: 50;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.18s;
+    }
+    .overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    @media (min-width: 520px) {
+      .overlay { align-items: center; }
+    }
+    .modal {
+      background: var(--surface);
+      width: 100%;
+      max-width: 400px;
+      border-radius: 14px 14px 0 0;
+      padding: 1.1rem;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--line);
+      transform: translateY(110%);
+      transition: transform 0.2s;
+    }
+    @media (min-width: 520px) {
+      .modal {
+        border-radius: 14px;
+        transform: scale(0.94);
+        opacity: 0;
+        transition: transform 0.16s, opacity 0.16s;
+      }
+    }
+    .overlay.open .modal { transform: translateY(0); }
+    @media (min-width: 520px) {
+      .overlay.open .modal {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+    .modal h3 {
+      margin: 0 0 0.4rem;
+      font-size: 1rem;
+      font-weight: 700;
+    }
+    .modal > p {
+      margin: 0 0 0.85rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    .modal label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 0.28rem;
+    }
+    .modal input {
+      width: 100%;
+      padding: 0.5rem 0.6rem;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      font-size: 1rem;
+      font-family: inherit;
+      margin-bottom: 0.85rem;
+    }
+    .modal input:focus {
+      outline: 2px solid #a1a1aa;
+      outline-offset: 0;
+      border-color: transparent;
+    }
+    .modal .row {
+      display: flex;
+      gap: 0.4rem;
+      justify-content: flex-end;
+    }
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+    }
+    .btn-ghost:hover { background: var(--bg); color: var(--ink); }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <span class="tag">Apartashower</span>
+    <h1>Lista de regalos</h1>
+    <p class="top__names">Pamela y Juan</p>
+    <p>Reserva con tu nombre. Si un regalo ya está elegido, verás quién lo tomó.</p>
+  </header>
+
+  <div class="stripe stripe--budget">
+            <div class="budget-fx" aria-hidden="true">
+      <svg class="budget-fx__crack" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M 0 2 L 18 26 L 14 36 M 18 26 L 34 20 L 48 44 M 34 20 L 30 10 M 48 44 L 62 50 L 70 68 M 62 50 L 82 42 L 94 58" />
+        <path d="M 3 0 L 20 32 L 12 48 M 20 32 L 36 38 L 44 62" />
+        <path d="M 100 5 L 78 28 L 82 40 M 78 28 L 58 22 L 48 48 M 58 22 L 52 12" />
+        <path d="M 96 0 L 72 35 L 68 52 L 52 70" />
+        <path d="M 40 0 L 52 24 L 48 38 M 52 24 L 68 18 L 78 36" />
+      </svg>
+      <div class="budget-fx__poo-swarm" aria-hidden="true">
+      <span class="budget-fx__poo-bit" style="top:14%;left:21%;animation-delay:0.00s;font-size:0.55rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:33%;left:74%;animation-delay:-0.43s;font-size:0.61rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:60%;left:77%;animation-delay:-0.86s;font-size:0.67rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:9%;left:30%;animation-delay:-0.84s;font-size:0.73rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:52%;left:17%;animation-delay:-1.27s;font-size:0.79rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:17%;left:64%;animation-delay:-1.70s;font-size:0.85rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:76%;left:76%;animation-delay:-1.68s;font-size:0.91rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:85%;left:38%;animation-delay:-2.11s;font-size:0.97rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:3%;left:34%;animation-delay:-2.54s;font-size:1.03rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:15%;left:64%;animation-delay:-2.52s;font-size:0.55rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:35%;left:23%;animation-delay:-2.95s;font-size:0.61rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:63%;left:78%;animation-delay:-3.38s;font-size:0.67rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:13%;left:83%;animation-delay:-3.36s;font-size:0.73rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:57%;left:38%;animation-delay:-3.79s;font-size:0.79rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:70%;left:27%;animation-delay:-4.22s;font-size:0.85rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:59%;left:66%;animation-delay:-4.20s;font-size:0.91rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:56%;left:80%;animation-delay:-4.63s;font-size:0.97rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:61%;left:44%;animation-delay:-5.06s;font-size:1.03rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:74%;left:42%;animation-delay:-5.04s;font-size:0.55rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:9%;left:74%;animation-delay:-5.47s;font-size:0.61rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:38%;left:25%;animation-delay:-5.90s;font-size:0.67rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:55%;left:82%;animation-delay:-5.88s;font-size:0.73rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:29%;left:5%;animation-delay:-6.31s;font-size:0.79rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:11%;left:46%;animation-delay:-6.74s;font-size:0.85rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:87%;left:37%;animation-delay:-6.72s;font-size:0.91rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:85%;left:68%;animation-delay:-0.15s;font-size:0.97rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:5%;left:84%;animation-delay:-0.58s;font-size:1.03rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:19%;left:50%;animation-delay:-0.56s;font-size:0.55rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:40%;left:50%;animation-delay:-0.99s;font-size:0.61rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:85%;left:84%;animation-delay:-1.42s;font-size:0.67rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:52%;left:27%;animation-delay:-1.40s;font-size:0.73rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:27%;left:2%;animation-delay:-1.83s;font-size:0.79rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:10%;left:11%;animation-delay:-2.26s;font-size:0.85rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:87%;left:54%;animation-delay:-2.24s;font-size:0.91rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:86%;left:47%;animation-delay:-2.67s;font-size:0.97rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:25%;left:70%;animation-delay:-3.10s;font-size:1.03rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:55%;left:4%;animation-delay:-3.08s;font-size:0.55rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:7%;left:56%;animation-delay:-3.51s;font-size:0.61rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:53%;left:58%;animation-delay:-3.94s;font-size:0.67rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:21%;left:10%;animation-delay:-3.92s;font-size:0.73rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:83%;left:29%;animation-delay:-4.35s;font-size:0.79rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:67%;left:6%;animation-delay:-4.78s;font-size:0.85rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:10%;left:17%;animation-delay:-4.76s;font-size:0.91rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:25%;left:62%;animation-delay:-5.19s;font-size:0.97rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:48%;left:57%;animation-delay:-5.62s;font-size:1.03rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:79%;left:72%;animation-delay:-5.60s;font-size:0.55rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:32%;left:8%;animation-delay:-6.03s;font-size:0.61rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:79%;left:62%;animation-delay:-6.46s;font-size:0.67rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:48%;left:66%;animation-delay:-6.44s;font-size:0.73rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:81%;left:20%;animation-delay:-6.87s;font-size:0.79rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:81%;left:31%;animation-delay:-0.30s;font-size:0.85rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:3%;left:10%;animation-delay:-0.28s;font-size:0.91rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:19%;left:23%;animation-delay:-0.71s;font-size:0.97rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:43%;left:70%;animation-delay:-1.14s;font-size:1.03rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:75%;left:67%;animation-delay:-1.12s;font-size:0.55rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:29%;left:74%;animation-delay:-1.55s;font-size:0.61rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:66%;left:12%;animation-delay:-1.98s;font-size:0.67rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:51%;left:68%;animation-delay:-1.96s;font-size:0.73rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:44%;left:74%;animation-delay:-2.39s;font-size:0.79rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:45%;left:30%;animation-delay:-2.82s;font-size:0.85rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:54%;left:33%;animation-delay:-2.80s;font-size:0.91rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:71%;left:14%;animation-delay:-3.23s;font-size:0.97rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:10%;left:29%;animation-delay:-3.66s;font-size:1.03rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:51%;left:78%;animation-delay:-3.64s;font-size:0.55rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:21%;left:77%;animation-delay:-4.07s;font-size:0.61rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:85%;left:76%;animation-delay:-4.50s;font-size:0.67rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:71%;left:16%;animation-delay:-4.48s;font-size:0.73rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:65%;left:74%;animation-delay:-4.91s;font-size:0.79rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:67%;left:82%;animation-delay:-5.34s;font-size:0.85rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:77%;left:40%;animation-delay:-5.32s;font-size:0.91rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:36%;left:35%;animation-delay:-5.75s;font-size:0.97rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:77%;left:18%;animation-delay:-6.18s;font-size:1.03rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:40%;left:35%;animation-delay:-6.16s;font-size:0.55rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:11%;left:2%;animation-delay:-6.59s;font-size:0.61rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:76%;left:3%;animation-delay:-7.02s;font-size:0.67rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:63%;left:78%;animation-delay:0.00s;font-size:0.73rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:58%;left:20%;animation-delay:-0.43s;font-size:0.79rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:21%;left:80%;animation-delay:-0.86s;font-size:0.85rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:47%;left:6%;animation-delay:-0.84s;font-size:0.91rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:81%;left:50%;animation-delay:-1.27s;font-size:0.97rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:37%;left:37%;animation-delay:-1.70s;font-size:1.03rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:87%;left:22%;animation-delay:-1.68s;font-size:0.55rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:59%;left:41%;animation-delay:-2.11s;font-size:0.61rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:39%;left:10%;animation-delay:-2.54s;font-size:0.67rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:6%;left:13%;animation-delay:-2.52s;font-size:0.73rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:17%;left:80%;animation-delay:-2.95s;font-size:0.79rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:36%;left:24%;animation-delay:-3.38s;font-size:0.85rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:63%;left:2%;animation-delay:-3.36s;font-size:0.91rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:12%;left:14%;animation-delay:-3.79s;font-size:0.97rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:55%;left:60%;animation-delay:-4.22s;font-size:1.03rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:20%;left:39%;animation-delay:-4.20s;font-size:0.55rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:77%;left:26%;animation-delay:-4.63s;font-size:0.61rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:73%;left:47%;animation-delay:-5.06s;font-size:0.67rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:77%;left:18%;animation-delay:-5.04s;font-size:0.73rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:3%;left:23%;animation-delay:-5.47s;font-size:0.79rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:23%;left:82%;animation-delay:-5.90s;font-size:0.85rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:51%;left:28%;animation-delay:-5.88s;font-size:0.91rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:87%;left:8%;animation-delay:-6.31s;font-size:0.97rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:62%;left:22%;animation-delay:-6.74s;font-size:1.03rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:43%;left:70%;animation-delay:-6.72s;font-size:0.55rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:32%;left:41%;animation-delay:-0.15s;font-size:0.61rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:29%;left:30%;animation-delay:-0.58s;font-size:0.67rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:34%;left:53%;animation-delay:-0.56s;font-size:0.73rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:47%;left:26%;animation-delay:-0.99s;font-size:0.79rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:68%;left:33%;animation-delay:-1.42s;font-size:0.85rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:47%;left:84%;animation-delay:-1.40s;font-size:0.91rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:13%;left:32%;animation-delay:-1.83s;font-size:0.97rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:73%;left:14%;animation-delay:-2.26s;font-size:1.03rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:55%;left:30%;animation-delay:-2.24s;font-size:0.55rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:45%;left:80%;animation-delay:-2.67s;font-size:0.61rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:43%;left:43%;animation-delay:-3.10s;font-size:0.67rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:49%;left:34%;animation-delay:-3.08s;font-size:0.73rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:32%;left:59%;animation-delay:-3.51s;font-size:0.79rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:69%;left:34%;animation-delay:-3.94s;font-size:0.85rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:28%;left:43%;animation-delay:-3.92s;font-size:0.91rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:81%;left:2%;animation-delay:-4.35s;font-size:0.97rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:56%;left:36%;animation-delay:-4.78s;font-size:1.03rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:39%;left:20%;animation-delay:-4.76s;font-size:0.55rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:30%;left:38%;animation-delay:-5.19s;font-size:0.61rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:17%;left:6%;animation-delay:-5.62s;font-size:0.67rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:39%;left:45%;animation-delay:-5.60s;font-size:0.73rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:69%;left:38%;animation-delay:-6.03s;font-size:0.79rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:21%;left:65%;animation-delay:-6.46s;font-size:0.85rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:67%;left:42%;animation-delay:-6.44s;font-size:0.91rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:35%;left:53%;animation-delay:-6.87s;font-size:0.97rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:11%;left:4%;animation-delay:-0.30s;font-size:1.03rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:88%;left:40%;animation-delay:-0.28s;font-size:0.55rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:9%;left:26%;animation-delay:-0.71s;font-size:0.61rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:24%;left:46%;animation-delay:-1.14s;font-size:0.67rem">💩</span>
+      <span class="budget-fx__poo-bit" style="top:47%;left:16%;animation-delay:-1.12s;font-size:0.73rem">💩</span>
+      </div>
+      <span class="budget-fx__fly" style="top:3%;left:5%;animation:fly-path-1 6.2s linear 0.00s infinite"></span>
+      <span class="budget-fx__fly" style="top:10%;left:16%;animation:fly-path-2 6.3s linear -0.35s infinite"></span>
+      <span class="budget-fx__fly" style="top:17%;left:27%;animation:fly-path-3 6.4s linear -0.70s infinite"></span>
+      <span class="budget-fx__fly" style="top:24%;left:38%;animation:fly-path-4 6.5s linear -1.05s infinite"></span>
+      <span class="budget-fx__fly" style="top:31%;left:49%;animation:fly-path-5 6.6s linear -1.40s infinite"></span>
+      <span class="budget-fx__fly" style="top:38%;left:60%;animation:fly-path-6 6.7s linear -1.75s infinite"></span>
+      <span class="budget-fx__fly" style="top:45%;left:71%;animation:fly-path-7 6.8s linear -2.10s infinite"></span>
+      <span class="budget-fx__fly" style="top:52%;left:82%;animation:fly-path-8 6.9s linear -2.45s infinite"></span>
+      <span class="budget-fx__fly" style="top:59%;left:8%;animation:fly-path-1 7.0s linear -2.80s infinite"></span>
+      <span class="budget-fx__fly" style="top:66%;left:19%;animation:fly-path-2 7.1s linear -3.15s infinite"></span>
+      <span class="budget-fx__fly" style="top:73%;left:30%;animation:fly-path-3 7.2s linear -3.50s infinite"></span>
+      <span class="budget-fx__fly" style="top:80%;left:41%;animation:fly-path-4 7.3s linear -3.85s infinite"></span>
+      <span class="budget-fx__fly" style="top:87%;left:52%;animation:fly-path-5 7.4s linear -4.20s infinite"></span>
+      <span class="budget-fx__fly" style="top:6%;left:63%;animation:fly-path-6 7.5s linear -4.55s infinite"></span>
+      <span class="budget-fx__fly" style="top:13%;left:74%;animation:fly-path-7 7.6s linear -4.90s infinite"></span>
+      <span class="budget-fx__fly" style="top:20%;left:0%;animation:fly-path-8 7.7s linear -5.25s infinite"></span>
+      <span class="budget-fx__fly" style="top:27%;left:11%;animation:fly-path-1 7.8s linear -5.60s infinite"></span>
+      <span class="budget-fx__fly" style="top:34%;left:22%;animation:fly-path-2 7.9s linear -5.95s infinite"></span>
+      <span class="budget-fx__fly" style="top:41%;left:33%;animation:fly-path-3 8.0s linear -6.30s infinite"></span>
+      <span class="budget-fx__fly" style="top:48%;left:44%;animation:fly-path-4 8.1s linear 0.00s infinite"></span>
+      <span class="budget-fx__fly" style="top:55%;left:55%;animation:fly-path-5 8.2s linear -0.35s infinite"></span>
+      <span class="budget-fx__fly" style="top:62%;left:66%;animation:fly-path-6 8.3s linear -0.70s infinite"></span>
+      <span class="budget-fx__fly" style="top:69%;left:77%;animation:fly-path-7 8.4s linear -1.05s infinite"></span>
+      <span class="budget-fx__fly" style="top:76%;left:3%;animation:fly-path-8 8.5s linear -1.40s infinite"></span>
+      <span class="budget-fx__fly" style="top:83%;left:14%;animation:fly-path-1 8.6s linear -1.75s infinite"></span>
+      <span class="budget-fx__fly" style="top:2%;left:25%;animation:fly-path-2 8.7s linear -2.10s infinite"></span>
+      <span class="budget-fx__fly" style="top:9%;left:36%;animation:fly-path-3 8.8s linear -2.45s infinite"></span>
+      <span class="budget-fx__fly" style="top:16%;left:47%;animation:fly-path-4 8.9s linear -2.80s infinite"></span>
+      <span class="budget-fx__fly" style="top:23%;left:58%;animation:fly-path-5 9.0s linear -3.15s infinite"></span>
+      <span class="budget-fx__fly" style="top:30%;left:69%;animation:fly-path-6 9.1s linear -3.50s infinite"></span>
+      <span class="budget-fx__fly" style="top:37%;left:80%;animation:fly-path-7 9.2s linear -3.85s infinite"></span>
+      <span class="budget-fx__fly" style="top:44%;left:6%;animation:fly-path-8 9.3s linear -4.20s infinite"></span>
+      <span class="budget-fx__fly" style="top:51%;left:17%;animation:fly-path-1 9.4s linear -4.55s infinite"></span>
+      <span class="budget-fx__fly" style="top:58%;left:28%;animation:fly-path-2 9.5s linear -4.90s infinite"></span>
+      <span class="budget-fx__fly" style="top:65%;left:39%;animation:fly-path-3 9.6s linear -5.25s infinite"></span>
+      <span class="budget-fx__fly" style="top:72%;left:50%;animation:fly-path-4 9.7s linear -5.60s infinite"></span>
+      <span class="budget-fx__fly" style="top:79%;left:61%;animation:fly-path-5 9.8s linear -5.95s infinite"></span>
+      <span class="budget-fx__fly" style="top:86%;left:72%;animation:fly-path-6 9.9s linear -6.30s infinite"></span>
+      <span class="budget-fx__fly" style="top:5%;left:83%;animation:fly-path-7 10.0s linear 0.00s infinite"></span>
+      <span class="budget-fx__fly" style="top:12%;left:9%;animation:fly-path-8 10.1s linear -0.35s infinite"></span>
+      <span class="budget-fx__fly" style="top:19%;left:20%;animation:fly-path-1 10.2s linear -0.70s infinite"></span>
+      <span class="budget-fx__fly" style="top:26%;left:31%;animation:fly-path-2 10.3s linear -1.05s infinite"></span>
+    </div>
+    <div class="inner">
+      <div class="note" role="note">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 16v-4M12 8h.01" />
+        </svg>
+        <span>Abajo está la <a href="#premium">zona Amigos premium</a>, aparte de esta lista.</span>
+      </div>
+
+      <section class="section friends-shell" aria-labelledby="sec-friends">
+        <div class="section-head">
+          <h2 id="sec-friends">Regalos de amigos</h2>
+          <p>Bajos recursos · on a budget</p>
+        </div>
+        <div id="list-friends" class="card-grid" aria-live="polite"></div>
+      </section>
+    </div>
+  </div>
+
+  <section class="section premium-zone" id="premium" aria-labelledby="sec-premium">
+        <div class="premium-fx" aria-hidden="true">
+      <span class="premium-fx__emoji premium-fx__emoji--slow" style="top:7%;left:3%;animation-delay:0.00s">👑</span>
+      <span class="premium-fx__emoji premium-fx__emoji--fast" style="top:20%;left:20%;animation-delay:-0.40s">👑</span>
+      <span class="premium-fx__emoji" style="top:33%;left:37%;animation-delay:-0.80s">👑</span>
+      <span class="premium-fx__emoji premium-fx__emoji--slow" style="top:46%;left:54%;animation-delay:-1.20s">👑</span>
+      <span class="premium-fx__emoji premium-fx__emoji--fast" style="top:59%;left:71%;animation-delay:-1.60s">👑</span>
+      <span class="premium-fx__emoji" style="top:72%;left:6%;animation-delay:-2.00s">👑</span>
+      <span class="premium-fx__emoji premium-fx__emoji--slow" style="top:7%;left:23%;animation-delay:-2.40s">👑</span>
+      <span class="premium-fx__emoji premium-fx__emoji--fast" style="top:20%;left:40%;animation-delay:-2.80s">👑</span>
+      <span class="premium-fx__emoji" style="top:33%;left:57%;animation-delay:-3.20s">👑</span>
+      <span class="premium-fx__emoji premium-fx__emoji--slow" style="top:46%;left:74%;animation-delay:-3.60s">👑</span>
+      <span class="premium-fx__emoji premium-fx__emoji--fast" style="top:59%;left:9%;animation-delay:0.00s">👑</span>
+      <span class="premium-fx__emoji" style="top:72%;left:26%;animation-delay:-0.40s">👑</span>
+      <span class="premium-fx__emoji premium-fx__emoji--slow" style="top:7%;left:43%;animation-delay:-0.80s">👑</span>
+      <span class="premium-fx__emoji premium-fx__emoji--fast" style="top:20%;left:60%;animation-delay:-1.20s">👑</span>
+      <span class="premium-fx__emoji premium-fx__emoji--fast" style="top:9%;left:11%;animation-delay:0.00s">💵</span>
+      <span class="premium-fx__emoji premium-fx__emoji--fast" style="top:20%;left:30%;animation-delay:-0.55s">💰</span>
+      <span class="premium-fx__emoji premium-fx__emoji--fast" style="top:31%;left:49%;animation-delay:-1.10s">💸</span>
+      <span class="premium-fx__emoji premium-fx__emoji--fast" style="top:42%;left:68%;animation-delay:-1.65s">🤑</span>
+      <span class="premium-fx__emoji premium-fx__emoji--fast" style="top:53%;left:9%;animation-delay:-2.20s">💴</span>
+      <span class="premium-fx__emoji premium-fx__emoji--fast" style="top:64%;left:28%;animation-delay:-2.75s">💶</span>
+      <span class="premium-fx__emoji premium-fx__emoji--fast" style="top:0%;left:47%;animation-delay:-3.30s">💵</span>
+      <span class="premium-fx__emoji premium-fx__emoji--fast" style="top:11%;left:66%;animation-delay:-3.85s">💰</span>
+      <span class="premium-fx__emoji premium-fx__emoji--fast" style="top:22%;left:7%;animation-delay:0.00s">💸</span>
+      <span class="premium-fx__emoji premium-fx__emoji--fast" style="top:33%;left:26%;animation-delay:-0.55s">🤑</span>
+      <span class="premium-fx__emoji premium-fx__emoji--fast" style="top:44%;left:45%;animation-delay:-1.10s">💴</span>
+      <span class="premium-fx__emoji premium-fx__emoji--fast" style="top:55%;left:64%;animation-delay:-1.65s">💶</span>
+      <span class="premium-fx__emoji premium-fx__emoji--fast" style="top:66%;left:5%;animation-delay:-2.20s">💵</span>
+      <span class="premium-fx__emoji premium-fx__emoji--fast" style="top:2%;left:24%;animation-delay:-2.75s">💰</span>
+      <span class="premium-fx__emoji premium-fx__emoji--fast" style="top:13%;left:43%;animation-delay:-3.30s">💸</span>
+      <span class="premium-fx__emoji premium-fx__emoji--fast" style="top:24%;left:62%;animation-delay:-3.85s">🤑</span>
+      <div class="premium-fx__cam-wrap" style="top:5%;left:6%;animation-delay:0.00s">
+        <span class="premium-fx__flash" style="animation-duration:2.15s;animation-delay:0.00s" aria-hidden="true"></span>
+        <span class="premium-fx__cam-ico">📸</span>
+      </div>
+      <div class="premium-fx__cam-wrap" style="top:8%;left:78%;animation-delay:-0.31s">
+        <span class="premium-fx__flash" style="animation-duration:2.26s;animation-delay:-0.58s" aria-hidden="true"></span>
+        <span class="premium-fx__cam-ico">📷</span>
+      </div>
+      <div class="premium-fx__cam-wrap" style="top:42%;left:4%;animation-delay:-0.62s">
+        <span class="premium-fx__flash" style="animation-duration:2.37s;animation-delay:-1.16s" aria-hidden="true"></span>
+        <span class="premium-fx__cam-ico">📸</span>
+      </div>
+      <div class="premium-fx__cam-wrap" style="top:48%;left:82%;animation-delay:-0.93s">
+        <span class="premium-fx__flash" style="animation-duration:2.48s;animation-delay:-1.74s" aria-hidden="true"></span>
+        <span class="premium-fx__cam-ico">📷</span>
+      </div>
+      <div class="premium-fx__cam-wrap" style="top:18%;left:44%;animation-delay:-1.24s">
+        <span class="premium-fx__flash" style="animation-duration:2.59s;animation-delay:-2.32s" aria-hidden="true"></span>
+        <span class="premium-fx__cam-ico">📸</span>
+      </div>
+      <div class="premium-fx__cam-wrap" style="top:62%;left:12%;animation-delay:-1.55s">
+        <span class="premium-fx__flash" style="animation-duration:2.70s;animation-delay:-2.90s" aria-hidden="true"></span>
+        <span class="premium-fx__cam-ico">📷</span>
+      </div>
+      <div class="premium-fx__cam-wrap" style="top:72%;left:55%;animation-delay:-1.86s">
+        <span class="premium-fx__flash" style="animation-duration:2.15s;animation-delay:-3.48s" aria-hidden="true"></span>
+        <span class="premium-fx__cam-ico">📸</span>
+      </div>
+      <div class="premium-fx__cam-wrap" style="top:28%;left:68%;animation-delay:-2.17s">
+        <span class="premium-fx__flash" style="animation-duration:2.26s;animation-delay:-4.06s" aria-hidden="true"></span>
+        <span class="premium-fx__cam-ico">📷</span>
+      </div>
+    </div>
+    <div class="inner">
+      <div class="section-head">
+        <h2 id="sec-premium">Amigos premium</h2>
+        <p>Segunda selección</p>
+      </div>
+      <div id="list-premium" class="card-grid card-grid--premium" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <footer class="stripe stripe--footer">
+    <div class="inner">Apartashower · reservas en línea</div>
+  </footer>
+
+  <div id="toast" class="toast" role="status"></div>
+  <div id="overlay" class="overlay" aria-hidden="true">
+    <div class="modal" id="modal-box" role="dialog" aria-labelledby="modal-title">
+      <h3 id="modal-title">Reservar regalo</h3>
+      <p id="modal-gift"></p>
+      <label for="guest-name">Tu nombre</label>
+      <input id="guest-name" type="text" autocomplete="name" maxlength="120" placeholder="Ej. María" />
+      <div class="row">
+        <button type="button" class="btn-ghost" id="modal-cancel">Cancelar</button>
+        <button type="button" class="btn" id="modal-confirm">Confirmar</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    const listFriends = document.getElementById("list-friends");
+    const listPremium = document.getElementById("list-premium");
+    const toastEl = document.getElementById("toast");
+    const overlay = document.getElementById("overlay");
+    const modalBox = document.getElementById("modal-box");
+    const guestInput = document.getElementById("guest-name");
+    const modalGift = document.getElementById("modal-gift");
+    const btnCancel = document.getElementById("modal-cancel");
+    const btnConfirm = document.getElementById("modal-confirm");
+
+    let items = [];
+    let reserveItemId = null;
+
+    function isPremium(it) {
+      const s = String(it.section ?? "")
+        .trim()
+        .toLowerCase();
+      return s === "premium";
+    }
+
+    function toast(msg) {
+      toastEl.textContent = msg;
+      toastEl.classList.add("show");
+      clearTimeout(toast._t);
+      toast._t = setTimeout(() => toastEl.classList.remove("show"), 2800);
+    }
+
+    async function load() {
+      try {
+        const r = await fetch(`/api/items?_=${Date.now()}`, { cache: "no-store" });
+        if (!r.ok) throw new Error();
+        items = await r.json();
+        render();
+      } catch {
+        listFriends.innerHTML = '<p class="empty">No se pudo cargar la lista. ¿Está encendido el servidor?</p>';
+        listPremium.innerHTML = "";
+      }
+    }
+
+    function mediaBlock(it) {
+      const u = String(it.image_url || "").trim();
+      const img = u
+        ? `<img class="card__img" src="/api/thumb?id=${it.id}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.remove()" />`
+        : "";
+      return `<div class="card__media"><div class="card__ph" aria-hidden="true"></div>${img}</div>`;
+    }
+
+    function cardHtml(it) {
+      const prem = isPremium(it);
+      const taken = Boolean(it.reserved_by && String(it.reserved_by).trim());
+      const cardClass = [prem ? "card card--premium" : "card", taken ? "card--reserved" : ""]
+        .filter(Boolean)
+        .join(" ");
+      const reserveBtn = taken
+        ? `<button type="button" class="btn-secondary" data-release="${it.id}">Liberar reserva</button>`
+        : `<button type="button" class="btn" data-reserve="${it.id}">Reservar</button>`;
+      const reservedBlock = taken
+        ? `<p class="card__reserved" role="status">Reservado por <strong>${escapeHtml(it.reserved_by)}</strong></p><p class="card__reserved-hint">Si te equivocaste de regalo, puedes liberarlo abajo.</p>`
+        : "";
+      const label = prem ? "VIP" : "Regalo";
+      const ariaTaken = taken ? ` aria-label="${escapeAttr(it.title)}. Reservado por ${escapeAttr(it.reserved_by)}."` : "";
+      return `
+        <article class="${cardClass}"${ariaTaken}>
+          ${mediaBlock(it)}
+          <div class="card__body">
+            <div class="card__label">${taken ? "No disponible" : label}</div>
+            <h3>${escapeHtml(it.title)}</h3>
+            ${reservedBlock}
+          </div>
+          <div class="card__foot">
+            <div class="row-actions">
+              <a class="link" href="${escapeAttr(it.url)}" target="_blank" rel="noopener noreferrer">Abrir enlace de compra</a>
+              ${reserveBtn}
+            </div>
+          </div>
+        </article>`;
+    }
+
+    function render() {
+      const friends = items.filter((i) => !isPremium(i));
+      const premium = items.filter((i) => isPremium(i));
+
+      listFriends.innerHTML = friends.length
+        ? friends.map(cardHtml).join("")
+        : '<p class="empty">No hay regalos en esta sección.</p>';
+      listPremium.innerHTML = premium.length
+        ? premium.map(cardHtml).join("")
+        : '<p class="empty empty--premium">No hay regalos en esta sección.</p>';
+
+      listFriends.querySelectorAll("[data-reserve]").forEach((btn) => {
+        btn.addEventListener("click", () => openModal(Number(btn.getAttribute("data-reserve"))));
+      });
+      listPremium.querySelectorAll("[data-reserve]").forEach((btn) => {
+        btn.addEventListener("click", () => openModal(Number(btn.getAttribute("data-reserve"))));
+      });
+      listFriends.querySelectorAll("[data-release]").forEach((btn) => {
+        btn.addEventListener("click", () => releaseReservation(Number(btn.getAttribute("data-release"))));
+      });
+      listPremium.querySelectorAll("[data-release]").forEach((btn) => {
+        btn.addEventListener("click", () => releaseReservation(Number(btn.getAttribute("data-release"))));
+      });
+    }
+
+    async function releaseReservation(id) {
+      const nid = Number(id);
+      const it = items.find((x) => Number(x.id) === nid);
+      if (!it || !String(it.reserved_by || "").trim()) {
+        toast("No se pudo identificar la reserva.");
+        return;
+      }
+      try {
+        const parseJson = async (res) => {
+          const t = await res.text();
+          if (!t) return {};
+          try {
+            return JSON.parse(t);
+          } catch {
+            return { _raw: t };
+          }
+        };
+        const headers = { Accept: "application/json", "Content-Type": "application/json" };
+        let r = await fetch("/api/release-reservation", {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ id: nid }),
+        });
+        let data = await parseJson(r);
+        if (!r.ok && r.status === 404 && String(data._raw || "").includes("<!DOCTYPE")) {
+          r = await fetch(`/api/items/${nid}/release`, { method: "POST", headers: { Accept: "application/json" } });
+          data = await parseJson(r);
+        }
+        if (!r.ok) {
+          const raw = String(data._raw || "");
+          const hint =
+            data.error ||
+            (raw.includes("<!DOCTYPE")
+              ? "Hay más de un servidor en el puerto 3000 o uno viejo. Cierra todas las ventanas de Node, abre PowerShell en la carpeta del proyecto y ejecuta: npm start"
+              : "") ||
+            (raw ? raw.trim().slice(0, 100) : "") ||
+            `Código ${r.status}`;
+          toast(hint);
+          return;
+        }
+        toast("Reserva liberada.");
+        await load();
+      } catch {
+        toast("Error de red.");
+      }
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+    function escapeAttr(s) {
+      return escapeHtml(s).replace(/'/g, "&#39;");
+    }
+
+    function openModal(id) {
+      const nid = Number(id);
+      const it = items.find((x) => Number(x.id) === nid);
+      if (!it || it.reserved_by) return;
+      reserveItemId = nid;
+      modalGift.textContent = it.title;
+      guestInput.value = "";
+      overlay.classList.add("open");
+      overlay.setAttribute("aria-hidden", "false");
+      guestInput.focus();
+    }
+
+    function closeModal() {
+      reserveItemId = null;
+      overlay.classList.remove("open");
+      overlay.setAttribute("aria-hidden", "true");
+    }
+
+    async function confirmReserve() {
+      const name = guestInput.value.trim();
+      if (!name) {
+        toast("Escribe tu nombre.");
+        return;
+      }
+      btnConfirm.disabled = true;
+      try {
+        const r = await fetch(`/api/items/${reserveItemId}/reserve`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name }),
+        });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) {
+          toast(data.error || "No se pudo reservar.");
+          return;
+        }
+        toast("Listo, gracias.");
+        closeModal();
+        await load();
+      } catch {
+        toast("Error de red.");
+      } finally {
+        btnConfirm.disabled = false;
+      }
+    }
+
+    btnCancel.addEventListener("click", closeModal);
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) closeModal();
+    });
+    btnConfirm.addEventListener("click", confirmReserve);
+    guestInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") confirmReserve();
+    });
+
+    load();
+  </script>
+</body>
+</html>

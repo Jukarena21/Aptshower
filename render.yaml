@@ -1,0 +1,12 @@
+# Opcional: en Render → New Blueprint → pegar este archivo (o conectar repo y configurar a mano).
+# Sin disco persistente, las reservas se pierden al redesplegar. Añade un Disk en el panel y DATA_DIR.
+services:
+  - type: web
+    name: apartashower
+    runtime: node
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
