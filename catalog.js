@@ -144,17 +144,17 @@ const PREVIEW_FALLBACK_BY_PRODUCT_URL = {
   "https://www.falabella.com.co/falabella-co/product/770439235/Bowl-en-Acero-inoxidable-26-cm-x-26-cm/770439235":
     "https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=800&q=85",
   "https://www.falabella.com.co/falabella-co/product/770439205/Bowl-en-Acero-inoxidable-21-cm-x-21-cm/770439205":
-    "https://images.unsplash.com/photo-1563563423-b7ed7b547cd0?auto=format&fit=crop&w=800&q=85",
+    "https://images.pexels.com/photos/4259140/pexels-photo-4259140.jpeg?auto=compress&cs=tinysrgb&w=800",
   "https://www.falabella.com.co/falabella-co/product/150795115/set-de-4-refractarias-para-horno-en-vidrio-2500-ml-1600-ml-1900-ml-3-2-lt-taza-medidora-500-m/150795116":
-    "https://images.unsplash.com/photo-1584990347806-91dafb45ec6f?auto=format&fit=crop&w=800&q=85",
+    "https://images.unsplash.com/photo-1589829085413-eaa008bac4a5?auto=format&fit=crop&w=800&q=85",
   "https://www.falabella.com.co/falabella-co/product/119360162/Vaso-medidor-1-litro-Pyrex-6001076/119360163?kid=shopp278fa&gclsrc=aw.ds&gad_source=1&gad_campaignid=22071755962":
-    "https://images.unsplash.com/photo-1589984662646-e7b2e4962f18?auto=format&fit=crop&w=800&q=85",
+    "https://images.pexels.com/photos/6610100/pexels-photo-6610100.jpeg?auto=compress&cs=tinysrgb&w=800",
   "https://www.falabella.com.co/falabella-co/product/143302191/balanza-bascula-digital-cocina-gramera-cubierta-vidrio-5-kgs/143302192":
-    "https://images.unsplash.com/photo-1576086213369-97a306360363?auto=format&fit=crop&w=800&q=85",
+    "https://images.unsplash.com/photo-1579762593179-f8553060e223?auto=format&fit=crop&w=800&q=85",
   "https://www.ambientegourmet.com/servilletero-cuadrado-negro/p?idsku=5952":
     "https://images.unsplash.com/photo-1529973625058-a6654313384e?auto=format&fit=crop&w=800&q=85",
   "https://www.homecenter.com.co/homecenter-co/product/915014/setx3-espatula-silicona-azul-y-blanco/915014/":
-    "https://images.unsplash.com/photo-1556912173-3bb406ef7e77?auto=format&fit=crop&w=800&q=85",
+    "https://images.pexels.com/photos/4253320/pexels-photo-4253320.jpeg?auto=compress&cs=tinysrgb&w=800",
   "https://www.ikea.com/co/es/p/grunka-set-utensilios-de-cocina-4-piezas-acero-inoxidable-30083334/":
     "https://images.unsplash.com/photo-1556912173-46e336bea7c1?auto=format&fit=crop&w=800&q=85",
   "https://www.ikea.com/co/es/p/upphetta-cafetera-prensa-francesa-vidrio-acero-inoxidable-60241389/":
@@ -162,7 +162,7 @@ const PREVIEW_FALLBACK_BY_PRODUCT_URL = {
   "https://www.ikea.com/co/es/p/vardagen-cucharas-medidoras-set-de-5-60324723/":
     "https://images.unsplash.com/photo-1590480604561-d23cbd640a90?auto=format&fit=crop&w=800&q=85",
   "https://www.ikea.com/co/es/p/vardagen-batidor-acero-inoxidable-haya-10581480/":
-    "https://images.unsplash.com/photo-1590794056226-bff3bf93154a?auto=format&fit=crop&w=800&q=85",
+    "https://images.unsplash.com/photo-1589226296639-455559d1f4d8?auto=format&fit=crop&w=800&q=85",
   "https://www.casaideas.com.co/organizador-cub-extendible-plus-casa-cocina-3213709000036/p":
     "https://images.unsplash.com/photo-1610701596001-115bbe4df904?auto=format&fit=crop&w=800&q=85",
   "https://www.casaideas.com.co/exprimidor-transparent--verde-agua--0002-multicolor-casa-cocina_3226716000036/p":
@@ -191,27 +191,78 @@ function insertAllCatalog(db) {
   }
 }
 
+/** Fragmento estable dentro de la URL del producto (para UPDATE aunque cambien query params o slash final). */
+function needleFromProductUrl(productUrl) {
+  try {
+    const u = new URL(productUrl);
+    const h = u.hostname.replace(/^www\./i, "").toLowerCase();
+    if (h.includes("falabella.com")) {
+      const m = productUrl.match(/\/product\/(\d{6,})\//);
+      if (m) return `/product/${m[1]}/`;
+    }
+    if (h.endsWith("ikea.com")) {
+      const m = u.pathname.match(/\/(p\/[^/]+)/);
+      if (m) return `/${m[1]}`;
+    }
+    if (h.includes("casaideas.com")) {
+      const parts = u.pathname.split("/").filter(Boolean);
+      if (parts.length) return parts[parts.length - 1];
+    }
+    if (h.includes("ambientegourmet.com")) return "servilletero-cuadrado-negro";
+    if (h.includes("homecenter.com")) {
+      const m = productUrl.match(/\/product\/(\d+)\//);
+      if (m) return `/product/${m[1]}/`;
+    }
+    if (h.includes("lamborghini.com")) return "/es-en/modelos/temerario";
+    if (h.includes("nvidia.com")) return "msi-geforce-rtx-5090";
+    if (h.includes("inversoro.es")) return "lingote-12-5-kilo-oro";
+    if (h.includes("terracoramg.com")) return "isla-ceycen";
+    if (h.includes("trumpcard.gov")) return "/apply";
+    if (h.includes("icbf.gov.co")) return "/adopciones";
+  } catch {
+    return "";
+  }
+  return "";
+}
+
 /**
  * Asigna miniaturas conocidas por URL de producto (amigos + premium).
- * Sobrescribe image_url si la URL está en el mapa, para corregir imágenes erróneas tras cambios.
+ * Coincidencia exacta (con slash final opcional) + por fragmento de ruta (URLs guardadas con variantes).
  */
 function applyPreviewFallbacks(db) {
-  const stmt = db.prepare("UPDATE items SET image_url = ? WHERE url = ?");
+  const exact = db.prepare(`
+    UPDATE items SET image_url = ?
+    WHERE rtrim(url, '/') = rtrim(?, '/')
+  `);
+  const fuzzy = db.prepare(`
+    UPDATE items SET image_url = ?
+    WHERE instr(url, ?) > 0
+  `);
   for (const [url, imageUrl] of Object.entries(PREVIEW_FALLBACK_BY_PRODUCT_URL)) {
-    stmt.run(imageUrl, url);
+    exact.run(imageUrl, url);
+    const needle = needleFromProductUrl(url);
+    if (needle) fuzzy.run(imageUrl, needle);
   }
 }
 
 /** Alinea títulos del catálogo con el enlace (BD ya sembrada en Railway, etc.). */
 function repairCatalogTitles(db) {
-  const fixes = [
-    ["https://www.lamborghini.com/es-en/modelos/temerario", "Lamborghini Temerario"],
-    ["https://terracoramg.com/propiedades/isla-ceycen/", "Isla Ceycen"],
-  ];
-  const upd = db.prepare("UPDATE items SET title = ? WHERE url = ?");
-  for (const [url, title] of fixes) {
-    upd.run(title, url);
-  }
+  const updExact = db.prepare(`
+    UPDATE items SET title = ?
+    WHERE rtrim(url, '/') = rtrim(?, '/')
+  `);
+  const updLamb = db.prepare(`
+    UPDATE items SET title = ?
+    WHERE instr(lower(url), 'lamborghini.com') > 0 AND instr(lower(url), 'temerario') > 0
+  `);
+  const updIsla = db.prepare(`
+    UPDATE items SET title = ?
+    WHERE instr(lower(url), 'terracoramg.com') > 0 AND instr(lower(url), 'ceycen') > 0
+  `);
+  updExact.run("Lamborghini Temerario", "https://www.lamborghini.com/es-en/modelos/temerario");
+  updExact.run("Isla Ceycen", "https://terracoramg.com/propiedades/isla-ceycen/");
+  updLamb.run("Lamborghini Temerario");
+  updIsla.run("Isla Ceycen");
 }
 
 function replaceAllCatalog(db) {

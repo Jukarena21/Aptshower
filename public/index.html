@@ -1447,10 +1447,30 @@
       }
     }
 
-    function mediaBlock(it) {
+    function thumbSrcForItem(it) {
       const u = String(it.image_url || "").trim();
-      const img = u
-        ? `<img class="card__img" src="/api/thumb?id=${it.id}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.remove()" />`
+      if (!u) return "";
+      try {
+        const h = new URL(u).hostname.replace(/^www\./i, "").toLowerCase();
+        if (
+          h === "images.unsplash.com" ||
+          h === "images.pexels.com" ||
+          h.endsWith(".wikimedia.org") ||
+          h.endsWith(".pexels.com") ||
+          h === "icbf.gov.co"
+        ) {
+          return u;
+        }
+      } catch {
+        return "";
+      }
+      return `/api/thumb?id=${Number(it.id)}`;
+    }
+
+    function mediaBlock(it) {
+      const src = thumbSrcForItem(it);
+      const img = src
+        ? `<img class="card__img" src="${escapeAttr(src)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.remove()" />`
         : "";
       return `<div class="card__media"><div class="card__ph" aria-hidden="true"></div>${img}</div>`;
     }
