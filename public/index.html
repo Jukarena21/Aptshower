@@ -1448,7 +1448,9 @@
         for (const row of list) {
           const id = Number(row.id);
           const it = items.find((x) => Number(x.id) === id);
-          if (it && row.imageUrl) it.image_url = row.imageUrl;
+          if (it && Object.prototype.hasOwnProperty.call(row, "imageUrl")) {
+            it.image_url = row.imageUrl;
+          }
         }
         render();
       } catch {

@@ -10,8 +10,6 @@ const {
   replaceAllCatalog,
   repairPremiumSections,
   applyPreviewFallbacks,
-  previewFallbackForProductUrl,
-  preferCuratedThumbnailOverOg,
   repairCatalogTitles,
   inferPremiumFromTitle,
 } = require("./catalog");
@@ -103,26 +101,37 @@ app.get("/api/items", (_req, res) => {
   res.json(mapped);
 });
 
-/** Por cada ítem, pide la página del producto y guarda og:image (o twitter:image) en BD. */
+function isStockPlaceholderImageUrl(url) {
+  const s = String(url || "").trim();
+  if (!s) return false;
+  try {
+    const h = new URL(s).hostname.toLowerCase();
+    return h === "images.unsplash.com" || h === "images.pexels.com" || h.endsWith(".pexels.com");
+  } catch {
+    return false;
+  }
+}
+
+/** Por cada ítem, pide la página del producto y guarda la miniatura extraída del HTML (og / JSON-LD, etc.). */
 app.post("/api/catalog/hydrate-previews", async (_req, res) => {
   try {
-    const rows = db.prepare("SELECT id, url FROM items ORDER BY id").all();
+    const rows = db.prepare("SELECT id, url, image_url FROM items ORDER BY id").all();
     const upd = db.prepare("UPDATE items SET image_url = ? WHERE id = ?");
     const out = [];
 
     async function one(row) {
       const pageUrl = String(row.url || "").trim();
       if (!pageUrl || !isSafeHttpUrl(pageUrl)) return;
-      const curated = previewFallbackForProductUrl(pageUrl);
-      let imageUrl = null;
-      if (preferCuratedThumbnailOverOg(pageUrl) && curated) {
-        imageUrl = curated;
-      } else {
-        imageUrl = (await fetchOgImage(pageUrl)) || curated || null;
+      const imageUrl = await fetchOgImage(pageUrl);
+      if (imageUrl && isSafeHttpUrl(imageUrl)) {
+        upd.run(imageUrl, row.id);
+        out.push({ id: row.id, imageUrl });
+        return;
       }
-      if (!imageUrl || !isSafeHttpUrl(imageUrl)) return;
-      upd.run(imageUrl, row.id);
-      out.push({ id: row.id, imageUrl });
+      if (isStockPlaceholderImageUrl(row.image_url)) {
+        upd.run(null, row.id);
+        out.push({ id: row.id, imageUrl: null });
+      }
     }
 
     const concurrency = 2;

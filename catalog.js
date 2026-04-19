@@ -137,109 +137,18 @@ function ensureSchema(db) {
 }
 
 /**
- * Páginas que bloquean bots, usan retos anti-bot o no publican og:image en el HTML inicial:
- * el servidor no puede extraer miniatura; usamos URL de imagen directa (misma política de seguridad que og-image).
+ * Las miniaturas salen del HTML del enlace (og/twitter/JSON-LD vía `fetchOgImage` al hidratar).
+ * No guardamos Unsplash/Pexels en el catálogo.
  */
-const PREVIEW_FALLBACK_BY_PRODUCT_URL = {
-  "https://www.falabella.com.co/falabella-co/product/770439235/Bowl-en-Acero-inoxidable-26-cm-x-26-cm/770439235":
-    "https://images.unsplash.com/photo-1610557892470-55d9ae21cfc7?auto=format&fit=crop&w=800&q=85",
-  "https://www.falabella.com.co/falabella-co/product/770439205/Bowl-en-Acero-inoxidable-21-cm-x-21-cm/770439205":
-    "https://images.pexels.com/photos/4259140/pexels-photo-4259140.jpeg?auto=compress&cs=tinysrgb&w=800",
-  "https://www.falabella.com.co/falabella-co/product/150795115/set-de-4-refractarias-para-horno-en-vidrio-2500-ml-1600-ml-1900-ml-3-2-lt-taza-medidora-500-m/150795116":
-    "https://images.unsplash.com/photo-1589829085413-eaa008bac4a5?auto=format&fit=crop&w=800&q=85",
-  "https://www.falabella.com.co/falabella-co/product/119360162/Vaso-medidor-1-litro-Pyrex-6001076/119360163?kid=shopp278fa&gclsrc=aw.ds&gad_source=1&gad_campaignid=22071755962":
-    "https://images.unsplash.com/photo-1589984662646-e7b2e4962f18?auto=format&fit=crop&w=800&q=85",
-  "https://www.falabella.com.co/falabella-co/product/143302191/balanza-bascula-digital-cocina-gramera-cubierta-vidrio-5-kgs/143302192":
-    "https://images.unsplash.com/photo-1579762593179-f8553060e223?auto=format&fit=crop&w=800&q=85",
-  "https://www.ambientegourmet.com/servilletero-cuadrado-negro/p?idsku=5952":
-    "https://images.unsplash.com/photo-1529973625058-a6654313384e?auto=format&fit=crop&w=800&q=85",
-  "https://www.homecenter.com.co/homecenter-co/product/915014/setx3-espatula-silicona-azul-y-blanco/915014/":
-    "https://images.pexels.com/photos/4253320/pexels-photo-4253320.jpeg?auto=compress&cs=tinysrgb&w=800",
-  "https://www.ikea.com/co/es/p/grunka-set-utensilios-de-cocina-4-piezas-acero-inoxidable-30083334/":
-    "https://images.unsplash.com/photo-1556912173-46e336bea7c1?auto=format&fit=crop&w=800&q=85",
-  "https://www.ikea.com/co/es/p/upphetta-cafetera-prensa-francesa-vidrio-acero-inoxidable-60241389/":
-    "https://images.unsplash.com/photo-1517487881594-6987fef3d217?auto=format&fit=crop&w=800&q=85",
-  "https://www.ikea.com/co/es/p/vardagen-cucharas-medidoras-set-de-5-60324723/":
-    "https://images.unsplash.com/photo-1590480604561-d23cbd640a90?auto=format&fit=crop&w=800&q=85",
-  "https://www.ikea.com/co/es/p/vardagen-batidor-acero-inoxidable-haya-10581480/":
-    "https://images.unsplash.com/photo-1589226296639-455559d1f4d8?auto=format&fit=crop&w=800&q=85",
-  "https://www.casaideas.com.co/organizador-cub-extendible-plus-casa-cocina-3213709000036/p":
-    "https://images.unsplash.com/photo-1610701596001-115bbe4df904?auto=format&fit=crop&w=800&q=85",
-  "https://www.casaideas.com.co/exprimidor-transparent--verde-agua--0002-multicolor-casa-cocina_3226716000036/p":
-    "https://images.unsplash.com/photo-1623065422902-30a2d299bbe4?auto=format&fit=crop&w=800&q=85",
-  "https://www.ikea.com/co/es/p/uppfylld-centrifugador-de-verduras-blanco-00521948/":
-    "https://images.unsplash.com/photo-1540420773420-3365732aeddd?auto=format&fit=crop&w=800&q=85",
-  "https://www.lamborghini.com/es-en/modelos/temerario":
-    "https://images.unsplash.com/photo-1544636331-e26879c50e9d?auto=format&fit=crop&w=800&q=85",
-  "https://marketplace.nvidia.com/en-us/consumer/graphics-cards/msi-geforce-rtx-5090-vanguard-soc/":
-    "https://images.unsplash.com/photo-1587831990711-23ca6441447b?auto=format&fit=crop&w=800&q=85",
-  "https://www.inversoro.es/lingotes-de-oro/lingote-de-12-5-kilo-oro/lingote-12-5-kilo-oro/":
-    "https://images.pexels.com/photos/844124/pexels-photo-844124.jpeg?auto=compress&cs=tinysrgb&w=800",
-  "https://terracoramg.com/propiedades/isla-ceycen/":
-    "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=85",
-  "https://www.trumpcard.gov/apply":
-    "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=800&q=85",
-  "https://www.icbf.gov.co/adopciones":
-    "https://www.icbf.gov.co/sites/default/files/logo_colombiapotencia_de_la_vida_2.png",
-};
-
 function insertAllCatalog(db) {
   const ins = db.prepare("INSERT INTO items (title, url, section, image_url) VALUES (?, ?, ?, ?)");
   for (const row of SEED_ROWS) {
-    const fallback = PREVIEW_FALLBACK_BY_PRODUCT_URL[row.url] || null;
-    ins.run(row.title, row.url, row.section, fallback);
+    ins.run(row.title, row.url, row.section, null);
   }
 }
 
-/**
- * Miniaturas de respaldo (solo si coinciden las URLs al pie de la letra, con slash final opcional).
- * No usar instr() genérico: un fragmento corto (p. ej. "p") podía machacar todas las filas.
- */
-function applyPreviewFallbacks(db) {
-  const stmt = db.prepare(`
-    UPDATE items SET image_url = ?
-    WHERE rtrim(url, '/') = rtrim(?, '/')
-  `);
-  for (const [url, imageUrl] of Object.entries(PREVIEW_FALLBACK_BY_PRODUCT_URL)) {
-    stmt.run(imageUrl, url);
-  }
-}
-
-/** Coincide URL guardada con mapa de miniaturas (slash final y query distinta en Falabella). */
-function previewFallbackForProductUrl(productUrl) {
-  const raw = String(productUrl || "").trim();
-  if (!raw) return null;
-  const stripSlash = (s) => s.replace(/\/+$/, "");
-  for (const [key, imageUrl] of Object.entries(PREVIEW_FALLBACK_BY_PRODUCT_URL)) {
-    if (stripSlash(key) === stripSlash(raw)) return imageUrl;
-  }
-  try {
-    const a = new URL(raw);
-    const pathA = stripSlash(a.pathname) || a.pathname;
-    for (const [key, imageUrl] of Object.entries(PREVIEW_FALLBACK_BY_PRODUCT_URL)) {
-      const b = new URL(key);
-      if (a.origin === b.origin && pathA === (stripSlash(b.pathname) || b.pathname)) {
-        return imageUrl;
-      }
-    }
-  } catch {
-    /* noop */
-  }
-  return null;
-}
-
-/** og:image de estas tiendas suele ser lifestyle o vacío; preferimos miniatura curada si existe. */
-function preferCuratedThumbnailOverOg(productUrl) {
-  try {
-    const u = new URL(String(productUrl || "").trim());
-    const h = u.hostname.replace(/^www\./i, "").toLowerCase();
-    if (h.includes("falabella.com")) return true;
-    if (h.includes("inversoro.es") && u.pathname.toLowerCase().includes("lingote")) return true;
-    return false;
-  } catch {
-    return false;
-  }
-}
+/** Reservado por compatibilidad con `seed-catalog.js` (antes aplicaba mapas de stock). */
+function applyPreviewFallbacks(_db) {}
 
 /** Alinea títulos del catálogo con el enlace (BD ya sembrada en Railway, etc.). */
 function repairCatalogTitles(db) {
@@ -337,14 +246,11 @@ function repairPremiumSections(db) {
 
 module.exports = {
   SEED_ROWS,
-  PREVIEW_FALLBACK_BY_PRODUCT_URL,
   ensureSchema,
   seedIfEmpty,
   replaceAllCatalog,
   repairPremiumSections,
   applyPreviewFallbacks,
-  previewFallbackForProductUrl,
-  preferCuratedThumbnailOverOg,
   repairCatalogTitles,
   inferPremiumFromTitle,
 };

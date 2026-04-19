@@ -1,6 +1,6 @@
 const { fetch: undiciFetch } = globalThis;
 
-const MAX_BYTES = 450_000;
+const MAX_BYTES = 900_000;
 const FETCH_TIMEOUT_MS = 12_000;
 const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36";
@@ -43,15 +43,18 @@ function decodeHtmlEntities(s) {
     .trim();
 }
 
-function extractPreviewImageUrl(html, pageUrl) {
-  if (!html || !pageUrl) return null;
-  const candidates = [];
-  const push = (raw) => {
-    if (!raw) return;
-    const u = decodeHtmlEntities(raw).replace(/\s+/g, "");
-    if (u) candidates.push(u);
-  };
+function normalizeImgCandidate(raw) {
+  if (!raw) return null;
+  const u = decodeHtmlEntities(raw).replace(/\s+/g, "");
+  return u || null;
+}
 
+function collectMetaPreviewImages(html) {
+  const out = [];
+  const push = (raw) => {
+    const u = normalizeImgCandidate(raw);
+    if (u) out.push(u);
+  };
   const patterns = [
     /<meta[^>]+property=["']og:image["'][^>]*content=["']([^"']+)["']/gi,
     /<meta[^>]+content=["']([^"']+)["'][^>]*property=["']og:image["']/gi,
@@ -64,15 +67,36 @@ function extractPreviewImageUrl(html, pageUrl) {
     /<meta[^>]+name=["']twitter:image:src["'][^>]*content=["']([^"']+)["']/gi,
     /<link[^>]+rel=["']image_src["'][^>]*href=["']([^"']+)["']/gi,
   ];
-
   for (const re of patterns) {
     let m;
     const r = new RegExp(re.source, re.flags);
-    while ((m = r.exec(html)) !== null) {
-      push(m[1]);
-    }
+    while ((m = r.exec(html)) !== null) push(m[1]);
   }
+  return out;
+}
 
+function pushProductImageTargets(out, im) {
+  if (typeof im === "string") {
+    const u = normalizeImgCandidate(im);
+    if (u) out.push(u);
+  } else if (Array.isArray(im)) {
+    for (const x of im) {
+      if (typeof x === "string") {
+        const u = normalizeImgCandidate(x);
+        if (u) out.push(u);
+      } else if (x && typeof x === "object" && x.url) {
+        const u = normalizeImgCandidate(x.url);
+        if (u) out.push(u);
+      }
+    }
+  } else if (im && typeof im === "object" && im.url) {
+    const u = normalizeImgCandidate(im.url);
+    if (u) out.push(u);
+  }
+}
+
+function collectLdJsonProductImages(html) {
+  const out = [];
   const ldRe = /<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
   let lm;
   while ((lm = ldRe.exec(html)) !== null) {
@@ -87,32 +111,125 @@ function extractPreviewImageUrl(html, pageUrl) {
           return;
         }
         if (node["@graph"]) visit(node["@graph"]);
-        const im = node.image;
-        if (typeof im === "string") push(im);
-        else if (Array.isArray(im)) {
-          im.forEach((x) => {
-            if (typeof x === "string") push(x);
-            else if (x && typeof x === "object" && x.url) push(x.url);
-          });
-        } else if (im && typeof im === "object" && im.url) push(im.url);
+        const t = node["@type"];
+        const types = (Array.isArray(t) ? t : t != null ? [t] : []).map((x) => String(x).toLowerCase());
+        const isProduct = types.some((x) => x.includes("product"));
+        if (isProduct) pushProductImageTargets(out, node.image);
+        for (const k of Object.keys(node)) {
+          if (k === "@context" || k === "@type" || k === "@graph" || k === "image") continue;
+          const v = node[k];
+          if (v && typeof v === "object") visit(v);
+        }
       };
       visit(data);
     } catch {
       /* ignorar JSON inválido */
     }
   }
+  return out;
+}
 
+function falabellaProductNumericTokens(pageUrl) {
+  const ids = new Set();
+  try {
+    const u = new URL(pageUrl);
+    for (const seg of u.pathname.split("/")) {
+      if (/^\d{5,}$/.test(seg)) ids.add(seg);
+    }
+    for (const v of u.searchParams.values()) {
+      if (/^\d{5,}$/.test(v)) ids.add(v);
+    }
+  } catch {
+    /* noop */
+  }
+  return ids;
+}
+
+function scorePreviewCandidate(pageUrl, absoluteHref) {
+  let score = 0;
+  try {
+    const page = new URL(pageUrl);
+    const h = page.hostname.toLowerCase();
+    const cand = String(absoluteHref).toLowerCase();
+    if (h.includes("falabella")) {
+      for (const t of falabellaProductNumericTokens(pageUrl)) {
+        if (cand.includes(t)) score += 50;
+      }
+      if (cand.includes("media.falabella.com")) score += 12;
+      if (cand.includes("falabellaco")) score += 4;
+    }
+  } catch {
+    /* noop */
+  }
+  return score;
+}
+
+function preferLdProductImagesFirst(hostname) {
+  const h = String(hostname || "").toLowerCase();
+  return (
+    h.includes("falabella") ||
+    h.includes("homecenter") ||
+    h.includes("ikea.com") ||
+    h.includes("casaideas") ||
+    h.includes("ambientegourmet") ||
+    h.includes("inversoro") ||
+    h.includes("lamborghini") ||
+    h.includes("nvidia.com") ||
+    h.includes("terracoramg") ||
+    h.includes("trumpcard.gov")
+  );
+}
+
+function extractPreviewImageUrl(html, pageUrl) {
+  if (!html || !pageUrl) return null;
+  const metaImages = collectMetaPreviewImages(html);
+  const ldProductImages = collectLdJsonProductImages(html);
+  let ordered;
+  try {
+    const h = new URL(pageUrl).hostname;
+    ordered = preferLdProductImagesFirst(h)
+      ? [...ldProductImages, ...metaImages]
+      : [...metaImages, ...ldProductImages];
+  } catch {
+    ordered = [...metaImages, ...ldProductImages];
+  }
+  const seen = new Set();
+  const dedup = [];
+  for (const c of ordered) {
+    if (seen.has(c)) continue;
+    seen.add(c);
+    dedup.push(c);
+  }
   const base = new URL(pageUrl);
-  for (const c of candidates) {
+  const absList = [];
+  for (const c of dedup) {
     try {
       const abs = new URL(c, base);
       if (!isSafeHttpUrl(abs.href)) continue;
-      return abs.href;
+      absList.push(abs.href);
     } catch {
       /* siguiente */
     }
   }
-  return null;
+  if (!absList.length) return null;
+  try {
+    const h = new URL(pageUrl).hostname.toLowerCase();
+    if (h.includes("falabella")) {
+      let best = absList[0];
+      let bestScore = scorePreviewCandidate(pageUrl, best);
+      for (let i = 1; i < absList.length; i++) {
+        const s = scorePreviewCandidate(pageUrl, absList[i]);
+        if (s > bestScore) {
+          bestScore = s;
+          best = absList[i];
+        }
+      }
+      return best;
+    }
+  } catch {
+    /* primera URL válida */
+  }
+  return absList[0];
 }
 
 async function readLimitedHtml(response, maxBytes) {
